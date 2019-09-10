@@ -32,15 +32,16 @@ RUN         mkdir -p m4 && autoreconf -fi && ./configure && make && make install
 
 # blue-alsa
 WORKDIR     /build/bluez-alsa
-RUN         apt-get install -y --no-install-recommends check=0.10.0-3+b3
-RUN         apt-get install -y --no-install-recommends libasound2-dev=1.1.8-1 \
+RUN         apt-get install -y --no-install-recommends \
+                        check=0.10.0-3+b3 \
+                        libasound2-dev=1.1.8-1 \
                         libbluetooth-dev=5.50-1 \
                         libdbus-1-dev=1.12.16-1 \
-                        libglib2.0-dev=2.58.3-2 \
+                        libglib2.0-dev=2.58.3-2+deb10u1 \
                         libsbc-dev=1.4-1 \
                         libreadline-dev=7.0-5 \
                         libbsd-dev=0.9.1-2 \
-                        libncurses5-dev=6.1+20181013-2
+                        libncurses-dev=6.1+20181013-2+deb10u1
 RUN         mkdir -p m4 && autoreconf --install
 
 WORKDIR     /build/bluez-alsa/build
@@ -48,7 +49,8 @@ RUN         ../configure --enable-test --enable-msbc --enable-ofono --enable-ala
 
 # shairport-sync
 WORKDIR     /build/shairport-sync
-RUN         apt-get install -y --no-install-recommends libasound2-dev=1.1.8-1 \
+RUN         apt-get install -y --no-install-recommends \
+                        libasound2-dev=1.1.8-1 \
                         libdaemon-dev=0.14-7 \
                         libpopt-dev=1.16-12 \
                         libsoxr-dev=0.1.2-3 \
