@@ -49,8 +49,6 @@ docker run -d --rm \
 
 You need to run this in `host` or `mac(or ip)vlan` networking (because of mDNS).
 
-If you want to run multiple instances on the same host, then `macvlan` (or `ipvlan`) is your only choice.
-
 ### Additional arguments
 
 Any additional arguments when running the image will get fed to the `shairport-sync` binary.
