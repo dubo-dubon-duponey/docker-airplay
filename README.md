@@ -1,19 +1,72 @@
 # What
 
-A docker image for for [shairport-sync](https://github.com/mikebrady/shairport-sync), an Apple AirPlay receiver.
+A Docker image to run an Apple AirPlay receiver.
 
- * multi-architecture (linux/amd64, linux/arm64, linux/arm/v7, linux/arm/v6)
- * based on debian:buster-slim
+This is based on [shairport-sync](https://github.com/mikebrady/shairport-sync) and the [ALAC](https://github.com/mikebrady/alac) library.
+
+## Image features
+
+ * multi-architecture:
+    * [x] linux/amd64
+    * [x] linux/arm64
+    * [x] linux/arm/v7
+    * [x] linux/arm/v6
+ * hardened:
+    * [x] image runs read-only
+    * [x] image runs with no capabilities
+    * [x] process runs as a non-root user, disabled login, no shell
+ * lightweight
+    * [x] based on our slim [Debian buster version](https://github.com/dubo-dubon-duponey/docker-debian)
+    * [x] simple entrypoint script
+    * [ ] multi-stage build with ~~no installed~~ dependencies for the runtime image:
+      * libdaemon0
+      * libpopt0
+      * libsoxr0
+      * libconfig9
+      * libssl1.1
+ * observable
+    * [x] healthcheck
+    * [x] log to stdout
+    * [ ] ~~prometheus endpoint~~ not applicable
 
 ## Run
 
 ```bash
 docker run -d \
+    --env NAME="My Fancy Airplay Receiver" \
     --net host \
+    --name airplay \
+    --read-only \
+    --cap-drop ALL \
+    --group-add audio \
     --device /dev/snd \
-    --env NAME=TotaleCroquette \
+    --rm \
     dubodubonduponey/shairport-sync:v1
 ```
+
+## Notes
+
+### Custom configuration file
+
+For advanced control over shairport-sync configuration, mount `/config/shairport-sync.conf`.
+
+Also, any additional arguments when running the image will get fed to the `shairport-sync` binary.
+
+This is specially convenient to address a different Alsa card or mixer (eg: `-- -d hw:1`), or enable statistics logging (`--statistics`) or verbose logging (`-vvv`).
+
+### Networking
+
+You need to run this in host or macvlan networking (because: mDNS).
+
+If you want to run multiple instances on the same host, then macvlan (or ipvlan) is your only choice.
+
+#### Build time
+
+You can rebuild the image using the following build arguments:
+
+ * BUILD_UID
+ 
+So to control which user-id to assign to the in-container user.
 
 ## Notes
 
