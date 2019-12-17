@@ -112,3 +112,7 @@ Main differences compared to `kevineye` image:
  * generates a multi-architecture image (amd64, arm64, amrv7, armv6)
  * shairport-sync source is forked on github under `dubo-dubon-duponey`
  * tested daily for many hours in production (sitting at my desk) on a raspberrypi armv7
+
+## Moar?
+
+See [DEVELOP.md](DEVELOP.md)
