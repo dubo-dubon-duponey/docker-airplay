@@ -33,13 +33,13 @@ This is based on [shairport-sync](https://github.com/mikebrady/shairport-sync) a
 
 ```bash
 docker run -d --rm \
+    --name "airport" \
     --env NAME="My Fancy Airplay Receiver" \
-    --name airport \
     --group-add audio \
     --device /dev/snd \
     --net host \
-    --read-only \
     --cap-drop ALL \
+    --read-only \
     dubodubonduponey/shairport-sync:v1
 ```
 
