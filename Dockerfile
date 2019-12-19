@@ -71,8 +71,9 @@ RUN           chmod 555 /dist/boot/bin/*
 
 # TODO move the other libraries in as well to avoid installation in the runtime image
 WORKDIR       /dist/boot/lib/
-RUN           cp /usr/lib/"$(gcc -dumpmachine)"/libasound.so.2  .
-RUN           cp /usr/local/lib/libalac.so.0 /dist/boot/lib/
+# XXX libasound-data does install more stuff than just the lib
+# RUN           cp /usr/lib/"$(gcc -dumpmachine)"/libasound.so.2  .
+RUN           cp /usr/local/lib/libalac.so.0 .
 
 #######################
 # Running image
@@ -86,6 +87,7 @@ ARG           DEBIAN_FRONTEND="noninteractive"
 ENV           TERM="xterm" LANG="C.UTF-8" LC_ALL="C.UTF-8"
 RUN           apt-get update -qq \
               && apt-get install -qq --no-install-recommends \
+                libasound2=1.1.8-1 \
                 libpopt0=1.16-12 \
                 libsoxr0=0.1.2-3 \
                 libconfig9=1.5-0.4 \
