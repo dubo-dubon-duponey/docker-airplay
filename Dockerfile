@@ -6,13 +6,14 @@ ARG           RUNTIME_BASE=dubodubonduponey/base:runtime
 # hadolint ignore=DL3006
 FROM          --platform=$BUILDPLATFORM $BUILDER_BASE                                                                   AS builder-healthcheck
 
-ARG           HEALTH_VER=51ebf8ca3d255e0c846307bf72740f731e6210c3
+ARG           GIT_REPO=github.com/dubo-dubon-duponey/healthcheckers
+ARG           GIT_VERSION=51ebf8ca3d255e0c846307bf72740f731e6210c3
 
-WORKDIR       $GOPATH/src/github.com/dubo-dubon-duponey/healthcheckers
-RUN           git clone git://github.com/dubo-dubon-duponey/healthcheckers .
-RUN           git checkout $HEALTH_VER
+WORKDIR       $GOPATH/src/$GIT_REPO
+RUN           git clone git://$GIT_REPO .
+RUN           git checkout $GIT_VERSION
 RUN           arch="${TARGETPLATFORM#*/}"; \
-              env GOOS=linux GOARCH="${arch%/*}" go build -v -ldflags "-s -w" -o /dist/boot/bin/rtsp-health ./cmd/rtsp
+              env GOOS=linux GOARCH="${arch%/*}" go build -mod=vendor -v -ldflags "-s -w" -o /dist/boot/bin/rtsp-health ./cmd/rtsp
 
 #######################
 # Building image
@@ -22,19 +23,18 @@ FROM          $BUILDER_BASE                                                     
 
 WORKDIR       /build
 
-# shairport-sync: v3.3.2
-ARG           SHAIRPORT_VER=ca9b2ff3bc1630c9de95f4555d4398d1a33ec2a3
-# with sigsegv fixes
-ARG           SHAIRPORT_VER=0e85ec370a08c3443b0b9e28707d1022efc0f74f
+# shairport-sync: v3.3.6
+ARG           SHAIRPORT_VER=15fd1d05f05e807703cb71500751f1a92ff5d8ee
 # ALAC from apple: Feb 2019
 ARG           ALAC_VERSION=5d6d836ee5b025a5e538cfa62c88bc5bced506ed
 
-RUN           git clone git://github.com/mikebrady/alac.git
+RUN           git clone git://github.com/mikebrady/alac
 RUN           git clone git://github.com/mikebrady/shairport-sync
 RUN           git -C alac           checkout $ALAC_VERSION
 RUN           git -C shairport-sync checkout $SHAIRPORT_VER
 
-RUN           apt-get install -qq --no-install-recommends \
+RUN           apt-get update -qq && \
+              apt-get install -qq --no-install-recommends \
                 libasound2-dev=1.1.8-1 \
                 libpopt-dev=1.16-12 \
                 libsoxr-dev=0.1.2-3 \
