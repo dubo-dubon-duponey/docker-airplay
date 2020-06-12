@@ -1,8 +1,9 @@
+ARG           BUILDER_BASE=dubodubonduponey/base:builder
+ARG           RUNTIME_BASE=dubodubonduponey/base:runtime
+
 #######################
 # Extra builder for healthchecker
 #######################
-ARG           BUILDER_BASE=dubodubonduponey/base:builder
-ARG           RUNTIME_BASE=dubodubonduponey/base:runtime
 # hadolint ignore=DL3006
 FROM          --platform=$BUILDPLATFORM $BUILDER_BASE                                                                   AS builder-healthcheck
 
@@ -13,7 +14,7 @@ WORKDIR       $GOPATH/src/$GIT_REPO
 RUN           git clone git://$GIT_REPO .
 RUN           git checkout $GIT_VERSION
 RUN           arch="${TARGETPLATFORM#*/}"; \
-              env GOOS=linux GOARCH="${arch%/*}" go build -mod=vendor -v -ldflags "-s -w" -o /dist/boot/bin/rtsp-health ./cmd/rtsp
+              env GOOS=linux GOARCH="${arch%/*}" go build -v -ldflags "-s -w" -o /dist/boot/bin/rtsp-health ./cmd/rtsp
 
 #######################
 # Building image
@@ -39,7 +40,7 @@ RUN           apt-get update -qq && \
                 libpopt-dev=1.16-12 \
                 libsoxr-dev=0.1.2-3 \
                 libconfig-dev=1.5-0.4 \
-                libssl-dev=1.1.1d-0+deb10u2 \
+                libssl-dev=1.1.1d-0+deb10u3 \
                 libcrypto++-dev=5.6.4-8
 
 # ALAC (from apple)
@@ -84,14 +85,13 @@ FROM          $RUNTIME_BASE
 USER          root
 
 ARG           DEBIAN_FRONTEND="noninteractive"
-ENV           TERM="xterm" LANG="C.UTF-8" LC_ALL="C.UTF-8"
 RUN           apt-get update -qq \
               && apt-get install -qq --no-install-recommends \
                 libasound2=1.1.8-1 \
                 libpopt0=1.16-12 \
                 libsoxr0=0.1.2-3 \
                 libconfig9=1.5-0.4 \
-                libssl1.1=1.1.1d-0+deb10u2 \
+                libssl1.1=1.1.1d-0+deb10u3 \
               && apt-get -qq autoremove       \
               && apt-get -qq clean            \
               && rm -rf /var/lib/apt/lists/*  \
