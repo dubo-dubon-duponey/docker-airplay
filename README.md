@@ -40,7 +40,7 @@ docker run -d --rm \
     --net host \
     --cap-drop ALL \
     --read-only \
-    dubodubonduponey/shairport-sync:v1
+    dubodubonduponey/shairport-sync
 ```
 
 ## Notes
