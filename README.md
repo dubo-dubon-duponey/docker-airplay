@@ -10,7 +10,7 @@ This is based on [shairport-sync](https://github.com/mikebrady/shairport-sync) a
     * [x] linux/amd64
     * [x] linux/arm64
     * [x] linux/arm/v7
-    * [x] linux/arm/v6
+    * [ ] linux/arm/v6 (should build, disabled by default)
  * hardened:
     * [x] image runs read-only
     * [x] image runs with no capabilities
@@ -40,7 +40,7 @@ docker run -d --rm \
     --net host \
     --cap-drop ALL \
     --read-only \
-    dubodubonduponey/shairport-sync:v1
+    dubodubonduponey/shairport-sync
 ```
 
 ## Notes
