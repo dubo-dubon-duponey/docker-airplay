@@ -57,6 +57,7 @@ WORKDIR       /build/shairport-sync
 RUN           autoreconf -fi \
                 && ./configure \
                   --with-alsa \
+                  --with-pipe \
                   --with-tinysvcmdns \
                   --with-ssl=openssl \
                   --with-soxr \
