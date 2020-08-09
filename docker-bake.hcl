@@ -91,11 +91,21 @@ variable "GO111MODULE" {
   default = "on"
 }
 
+# Do we have http and https proxies for other operations?
+variable "http_proxy" {
+  default = ""
+}
+
+variable "https_proxy" {
+  default = ""
+}
+
 # Just a hack to workaround buildkit path funkyness
 variable "PWD" {
   default = ""
 }
 
+# Toggle on content trust by default
 variable "DOCKER_CONTENT_TRUST" {
   default = "1"
 }
@@ -107,6 +117,8 @@ target "shared" {
     APTPROXY = "${APTPROXY}"
     GOPROXY = "${GOPROXY}"
     GO111MODULE = "${GO111MODULE}"
+    http_proxy = "${http_proxy}"
+    https_proxy = "${https_proxy}"
 
     BUILDER_BASE = "${equal(BUILDER_BASE,"") ? "${REGISTRY}/dubodubonduponey/base:builder-${DEBIAN_SUITE}-${DEBIAN_DATE}" : "${BUILDER_BASE}"}"
     RUNTIME_BASE = "${equal(RUNTIME_BASE,"") ? "${REGISTRY}/dubodubonduponey/base:runtime-${DEBIAN_SUITE}-${DEBIAN_DATE}" : "${RUNTIME_BASE}"}"
