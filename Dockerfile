@@ -13,8 +13,9 @@ ARG           GIT_VERSION=51ebf8ca3d255e0c846307bf72740f731e6210c3
 WORKDIR       $GOPATH/src/$GIT_REPO
 RUN           git clone git://$GIT_REPO .
 RUN           git checkout $GIT_VERSION
-RUN           arch="${TARGETPLATFORM#*/}"; \
-              env GOOS=linux GOARCH="${arch%/*}" go build -v -ldflags "-s -w" -o /dist/boot/bin/rtsp-health ./cmd/rtsp
+# hadolint ignore=DL4006
+RUN           env GOOS=linux GOARCH="$(printf "%s" "$TARGETPLATFORM" | sed -E 's/^[^/]+\/([^/]+).*/\1/')" go build -v -ldflags "-s -w" \
+                -o /dist/boot/bin/rtsp-health ./cmd/rtsp
 
 #######################
 # Building image
@@ -24,8 +25,8 @@ FROM          $BUILDER_BASE                                                     
 
 WORKDIR       /build
 
-# shairport-sync: v3.3.6
-ARG           SHAIRPORT_VER=15fd1d05f05e807703cb71500751f1a92ff5d8ee
+# shairport-sync: v3.3.7 (July 2020)
+ARG           SHAIRPORT_VER=153c88a357cb9f7c84cc21c03b84fdae0e436fb9
 # ALAC from apple: Feb 2019
 ARG           ALAC_VERSION=5d6d836ee5b025a5e538cfa62c88bc5bced506ed
 
@@ -53,11 +54,13 @@ RUN           mkdir -p m4 \
 
 # shairport-sync
 WORKDIR       /build/shairport-sync
-# Do we really want libsoxr
+# XXX Do we really want libsoxr?
+# stdout & pipe blindly added to possibly benefit snapcasters
 RUN           autoreconf -fi \
                 && ./configure \
                   --with-alsa \
                   --with-pipe \
+                  --with-stdout \
                   --with-tinysvcmdns \
                   --with-ssl=openssl \
                   --with-soxr \
@@ -85,7 +88,6 @@ FROM          $RUNTIME_BASE
 
 USER          root
 
-ARG           DEBIAN_FRONTEND="noninteractive"
 RUN           apt-get update -qq \
               && apt-get install -qq --no-install-recommends \
                 libasound2=1.1.8-1 \
