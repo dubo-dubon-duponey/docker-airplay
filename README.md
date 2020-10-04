@@ -49,7 +49,7 @@ docker run -d --rm \
 
 You need to run this in `host` or `mac(or ip)vlan` networking (because of mDNS).
 
-### Additional arguments
+### Additional arguments
 
 Any additional arguments when running the image will get fed to the `shairport-sync` binary.
 
