@@ -4,7 +4,7 @@ ARG           RUNTIME_BASE=dubodubonduponey/base:runtime
 #######################
 # Extra builder for healthchecker
 #######################
-# hadolint ignore=DL3006
+# hadolint ignore=DL3006,DL3029
 FROM          --platform=$BUILDPLATFORM $BUILDER_BASE                                                                   AS builder-healthcheck
 
 ARG           GIT_REPO=github.com/dubo-dubon-duponey/healthcheckers
@@ -24,11 +24,12 @@ RUN           env GOOS=linux GOARCH="$(printf "%s" "$TARGETPLATFORM" | sed -E 's
 FROM          $BUILDER_BASE                                                                                             AS builder
 
 WORKDIR       /build
-
-# shairport-sync: v3.3.7 (July 2020)
-ARG           SHAIRPORT_VER=153c88a357cb9f7c84cc21c03b84fdae0e436fb9
 # ALAC from apple: Feb 2019
 ARG           ALAC_VERSION=5d6d836ee5b025a5e538cfa62c88bc5bced506ed
+# shairport-sync: v3.3.7 (July 2020)
+# ARG           SHAIRPORT_VER=153c88a357cb9f7c84cc21c03b84fdae0e436fb9
+# Nov, 16, 2020
+ARG           SHAIRPORT_VER=90636da36b96be61564ec31830ee965cfdc96135
 
 RUN           git clone git://github.com/mikebrady/alac
 RUN           git clone git://github.com/mikebrady/shairport-sync
@@ -52,7 +53,7 @@ RUN           mkdir -p m4 \
                 && make \
                 && make install
 
-# shairport-sync
+# shairport-sync
 WORKDIR       /build/shairport-sync
 # XXX Do we really want libsoxr?
 # stdout & pipe blindly added to possibly benefit snapcasters
