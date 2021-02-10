@@ -9,13 +9,15 @@ FROM          --platform=$BUILDPLATFORM $BUILDER_BASE                           
 
 ARG           GIT_REPO=github.com/dubo-dubon-duponey/healthcheckers
 ARG           GIT_VERSION=51ebf8ca3d255e0c846307bf72740f731e6210c3
+ARG           BUILD_TARGET=./cmd/rtsp
+ARG           BUILD_OUTPUT=rtsp-health
 
 WORKDIR       $GOPATH/src/$GIT_REPO
 RUN           git clone git://$GIT_REPO .
 RUN           git checkout $GIT_VERSION
 # hadolint ignore=DL4006
 RUN           env GOOS=linux GOARCH="$(printf "%s" "$TARGETPLATFORM" | sed -E 's/^[^/]+\/([^/]+).*/\1/')" go build -v -ldflags "-s -w" \
-                -o /dist/boot/bin/rtsp-health ./cmd/rtsp
+                -o /dist/boot/bin/"$BUILD_OUTPUT" "$BUILD_TARGET"
 
 #######################
 # Building image
@@ -26,10 +28,8 @@ FROM          $BUILDER_BASE                                                     
 WORKDIR       /build
 # ALAC from apple: Feb 2019
 ARG           ALAC_VERSION=5d6d836ee5b025a5e538cfa62c88bc5bced506ed
-# shairport-sync: v3.3.7 (July 2020)
-# ARG           SHAIRPORT_VER=153c88a357cb9f7c84cc21c03b84fdae0e436fb9
-# Nov, 16, 2020
-ARG           SHAIRPORT_VER=90636da36b96be61564ec31830ee965cfdc96135
+# shairport-sync: v3.3.7
+ARG           SHAIRPORT_VER=02cd3f8fdb4f2ba0a601a1d395b558c95a49afa2
 
 RUN           git clone git://github.com/mikebrady/alac
 RUN           git clone git://github.com/mikebrady/shairport-sync
