@@ -1,43 +1,76 @@
-ARG           BUILDER_BASE=dubodubonduponey/base@sha256:b51f084380bc1bd2b665840317b6f19ccc844ee2fc7e700bf8633d95deba2819
-ARG           RUNTIME_BASE=dubodubonduponey/base@sha256:d28e8eed3e87e8dc5afdd56367d3cf2da12a0003d064b5c62405afbe4725ee99
+ARG           FROM_IMAGE_BUILDER=ghcr.io/dubo-dubon-duponey/base:builder-bullseye-2021-06-01@sha256:addbd9b89d8973df985d2d95e22383961ba7b9c04580ac6a7f406a3a9ec4731e
+ARG           FROM_IMAGE_RUNTIME=ghcr.io/dubo-dubon-duponey/base:runtime-bullseye-2021-06-01@sha256:a2b1b2f69ed376bd6ffc29e2d240e8b9d332e78589adafadb84c73b778e6bc77
 
 #######################
 # Extra builder for healthchecker
 #######################
-# hadolint ignore=DL3006,DL3029
-FROM          --platform=$BUILDPLATFORM $BUILDER_BASE                                                                   AS builder-healthcheck
+FROM          --platform=$BUILDPLATFORM $FROM_IMAGE_BUILDER                                                             AS builder-healthcheck
 
 ARG           GIT_REPO=github.com/dubo-dubon-duponey/healthcheckers
-ARG           GIT_VERSION=51ebf8ca3d255e0c846307bf72740f731e6210c3
-ARG           BUILD_TARGET=./cmd/rtsp
-ARG           BUILD_OUTPUT=rtsp-health
-ARG           BUILD_FLAGS="-s -w"
+ARG           GIT_VERSION=51ebf8c
+ARG           GIT_COMMIT=51ebf8ca3d255e0c846307bf72740f731e6210c3
+ARG           GO_BUILD_SOURCE=./cmd/rtsp
+ARG           GO_BUILD_OUTPUT=rtsp-health
+ARG           GO_LD_FLAGS="-s -w"
+ARG           GO_TAGS="netgo osusergo"
 
 WORKDIR       $GOPATH/src/$GIT_REPO
-RUN           git clone git://$GIT_REPO .
-RUN           git checkout $GIT_VERSION
+RUN           git clone --recurse-submodules git://"$GIT_REPO" . && git checkout "$GIT_COMMIT"
+ARG           GOOS="$TARGETOS"
+ARG           GOARCH="$TARGETARCH"
+
 # hadolint ignore=DL4006
-RUN           env GOOS=linux GOARCH="$(printf "%s" "$TARGETPLATFORM" | sed -E 's/^[^/]+\/([^/]+).*/\1/')" go build -v \
-                -ldflags "$BUILD_FLAGS" -o /dist/boot/bin/"$BUILD_OUTPUT" "$BUILD_TARGET"
+RUN           env GOARM="$(printf "%s" "$TARGETVARIANT" | tr -d v)" go build -trimpath $(if [ "$CGO_ENABLED" = 1 ]; then printf "%s" "-buildmode pie"; fi) \
+                -ldflags "$GO_LD_FLAGS" -tags "$GO_TAGS" -o /dist/boot/bin/"$GO_BUILD_OUTPUT" "$GO_BUILD_SOURCE"
 
 #######################
 # Building image
 #######################
-# hadolint ignore=DL3006
-FROM          $BUILDER_BASE                                                                                             AS builder
+# XXX compile all that statically and x-pile
+FROM          $FROM_IMAGE_BUILDER                                                                                       AS builder-alac
 
-WORKDIR       /build
 # ALAC from apple: Feb 2019
-ARG           ALAC_VERSION=5d6d836ee5b025a5e538cfa62c88bc5bced506ed
+ARG           GIT_REPO=github.com/mikebrady/alac
+ARG           GIT_VERSION=5d6d836
+ARG           GIT_COMMIT=5d6d836ee5b025a5e538cfa62c88bc5bced506ed
+
+WORKDIR       $GOPATH/src/$GIT_REPO
+RUN           git clone --recurse-submodules git://"$GIT_REPO" . && git checkout "$GIT_COMMIT"
+
+RUN           mkdir -p m4 \
+                && autoreconf -fi \
+                && ./configure \
+                && make \
+                && make install
+
+RUN           mkdir -p /dist/boot/lib; cp /usr/local/lib/libalac.so.0 /dist/boot/lib
+
+# TODO move the other libraries in as well to avoid installation in the runtime image
+# XXX libasound-data does install more stuff than just the lib
+# RUN           cp /usr/lib/"$(gcc -dumpmachine)"/libasound.so.2  .
+
+#######################
+# Building image
+#######################
+FROM          $FROM_IMAGE_BUILDER                                                                                       AS builder-shairport
+
 # shairport-sync: v3.3.8
-ARG           SHAIRPORT_VER=c19f697be2b6761616876787064d6b067cf87089
+ARG           GIT_REPO=github.com/mikebrady/shairport-sync
+ARG           GIT_VERSION=c19f697
+ARG           GIT_COMMIT=c19f697be2b6761616876787064d6b067cf87089
 
-RUN           git clone git://github.com/mikebrady/alac
-RUN           git clone git://github.com/mikebrady/shairport-sync
-RUN           git -C alac           checkout $ALAC_VERSION
-RUN           git -C shairport-sync checkout $SHAIRPORT_VER
+WORKDIR       $GOPATH/src/$GIT_REPO
+RUN           git clone --recurse-submodules git://"$GIT_REPO" . && git checkout "$GIT_COMMIT"
 
-RUN           apt-get update -qq && \
+RUN           --mount=type=secret,mode=0444,id=CA,dst=/etc/ssl/certs/ca-certificates.crt \
+              --mount=type=secret,id=CERTIFICATE \
+              --mount=type=secret,id=KEY \
+              --mount=type=secret,id=PASSPHRASE \
+              --mount=type=secret,mode=0444,id=GPG.gpg \
+              --mount=type=secret,id=NETRC \
+              --mount=type=secret,id=APT_SOURCES \
+              --mount=type=secret,id=APT_OPTIONS,dst=/etc/apt/apt.conf.d/dbdbdp.conf \
+              apt-get update -qq && \
               apt-get install -qq --no-install-recommends \
                 libasound2-dev=1.1.8-1 \
                 libpopt-dev=1.16-12 \
@@ -46,18 +79,9 @@ RUN           apt-get update -qq && \
                 libssl-dev=1.1.1d-0+deb10u3 \
                 libcrypto++-dev=5.6.4-8
 
-# ALAC (from apple)
-WORKDIR       /build/alac
-RUN           mkdir -p m4 \
-                && autoreconf -fi \
-                && ./configure \
-                && make \
-                && make install
-
-# shairport-sync
-WORKDIR       /build/shairport-sync
 # XXX Do we really want libsoxr?
 # stdout & pipe blindly added to possibly benefit snapcasters
+# if feasible, get rid of the mdns stack here
 RUN           autoreconf -fi \
                 && ./configure \
                   --with-alsa \
@@ -72,21 +96,26 @@ RUN           autoreconf -fi \
                 && make \
                 && make install
 
-COPY          --from=builder-healthcheck /dist/boot/bin           /dist/boot/bin
-RUN           cp /usr/local/bin/shairport-sync /dist/boot/bin
-RUN           chmod 555 /dist/boot/bin/*
+RUN           mkdir -p /dist/boot/bin; cp /usr/local/bin/shairport-sync /dist/boot/bin
 
-# TODO move the other libraries in as well to avoid installation in the runtime image
-WORKDIR       /dist/boot/lib/
-# XXX libasound-data does install more stuff than just the lib
-# RUN           cp /usr/lib/"$(gcc -dumpmachine)"/libasound.so.2  .
-RUN           cp /usr/local/lib/libalac.so.0 .
+
+#######################
+# Building image
+#######################
+FROM          $FROM_IMAGE_BUILDER                                                                                       AS builder
+
+COPY          --from=builder-healthcheck /dist/boot/bin /dist/boot/bin
+COPY          --from=builder-alac /dist/boot /dist/boot
+COPY          --from=builder-shairport /dist/boot/bin /dist/boot/bin
+
+RUN           chmod 555 /dist/boot/bin/*; \
+              epoch="$(date --date "$BUILD_CREATED" +%s)"; \
+              find /dist/boot/bin -newermt "@$epoch" -exec touch --no-dereference --date="@$epoch" '{}' +;
 
 #######################
 # Running image
 #######################
-# hadolint ignore=DL3006
-FROM          $RUNTIME_BASE
+FROM          $FROM_IMAGE_RUNTIME
 
 USER          root
 
@@ -105,7 +134,7 @@ RUN           apt-get update -qq \
 
 USER          dubo-dubon-duponey
 
-COPY          --from=builder --chown=$BUILD_UID:root /dist .
+COPY          --from=builder --chown=$BUILD_UID:root /dist /
 
 ENV           NAME=TotaleCroquette
 

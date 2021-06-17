@@ -6,28 +6,31 @@ This is based on [shairport-sync](https://github.com/mikebrady/shairport-sync) a
 
 ## Image features
 
- * multi-architecture:
-    * [x] linux/amd64
-    * [x] linux/arm64
-    * [x] linux/arm/v7
-    * [ ] linux/arm/v6 (should build, disabled by default)
- * hardened:
-    * [x] image runs read-only
-    * [x] image runs with no capabilities
-    * [x] process runs as a non-root user, disabled login, no shell
- * lightweight
-    * [x] based on our slim [Debian buster version](https://github.com/dubo-dubon-duponey/docker-debian)
-    * [x] simple entrypoint script
-    * [ ] multi-stage build with ~~no installed~~ dependencies for the runtime image:
-      * libasound2
-      * libpopt0
-      * libsoxr0
-      * libconfig9
-      * libssl1.1
- * observable
-    * [x] healthcheck
-    * [x] log to stdout
-    * [ ] ~~prometheus endpoint~~ not applicable
+* multi-architecture:
+  * [x] linux/amd64
+  * [x] linux/386
+  * [x] linux/arm64
+  * [x] linux/arm/v7
+  * [x] linux/arm/v6
+  * [x] linux/ppc64
+  * [x] linux/s390x
+* hardened:
+  * [x] image runs read-only
+  * [x] image runs with no capabilities (unless you want it on port 443)
+  * [x] process runs as a non-root user, disabled login, no shell
+* lightweight
+  * [x] based on our slim [Debian bullseye version (2021-06-01)](https://github.com/dubo-dubon-duponey/docker-debian)
+  * [x] simple entrypoint script
+  * [ ] multi-stage build with ~~no installed~~ dependencies for the runtime image:
+    * libasound2
+    * libpopt0
+    * libsoxr0
+    * libconfig9
+    * libssl1.1
+* observable
+  * [x] healthcheck
+  * [x] log to stdout
+  * [ ] ~~prometheus endpoint~~
 
 ## Run
 
