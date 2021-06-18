@@ -19,7 +19,7 @@ RUN           git clone --recurse-submodules git://"$GIT_REPO" . && git checkout
 ARG           GOOS="$TARGETOS"
 ARG           GOARCH="$TARGETARCH"
 
-# hadolint ignore=DL4006
+# hadolint ignore=SC2046
 RUN           env GOARM="$(printf "%s" "$TARGETVARIANT" | tr -d v)" go build -trimpath $(if [ "$CGO_ENABLED" = 1 ]; then printf "%s" "-buildmode pie"; fi) \
                 -ldflags "$GO_LD_FLAGS" -tags "$GO_TAGS" -o /dist/boot/bin/"$GO_BUILD_OUTPUT" "$GO_BUILD_SOURCE"
 
@@ -72,12 +72,12 @@ RUN           --mount=type=secret,mode=0444,id=CA,dst=/etc/ssl/certs/ca-certific
               --mount=type=secret,id=APT_OPTIONS,dst=/etc/apt/apt.conf.d/dbdbdp.conf \
               apt-get update -qq && \
               apt-get install -qq --no-install-recommends \
-                libasound2-dev=1.1.8-1 \
-                libpopt-dev=1.16-12 \
-                libsoxr-dev=0.1.2-3 \
+                libasound2-dev=1.2.4-1.1 \
+                libpopt-dev=1.18-2 \
+                libsoxr-dev=0.1.3-4 \
                 libconfig-dev=1.5-0.4 \
-                libssl-dev=1.1.1d-0+deb10u3 \
-                libcrypto++-dev=5.6.4-8
+                libssl-dev=1.1.1k-1 \
+                libcrypto++-dev=8.4.0-1
 
 # XXX Do we really want libsoxr?
 # stdout & pipe blindly added to possibly benefit snapcasters
@@ -121,11 +121,11 @@ USER          root
 
 RUN           apt-get update -qq \
               && apt-get install -qq --no-install-recommends \
-                libasound2=1.1.8-1 \
-                libpopt0=1.16-12 \
-                libsoxr0=0.1.2-3 \
+                libasound2=1.2.4-1.1 \
+                libpopt0=1.18-2 \
+                libsoxr0=0.1.3-4 \
                 libconfig9=1.5-0.4 \
-                libssl1.1=1.1.1d-0+deb10u3 \
+                libssl1.1=1.1.1k-1 \
               && apt-get -qq autoremove       \
               && apt-get -qq clean            \
               && rm -rf /var/lib/apt/lists/*  \
