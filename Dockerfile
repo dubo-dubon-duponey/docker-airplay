@@ -1,131 +1,149 @@
-ARG           FROM_IMAGE_BUILDER=ghcr.io/dubo-dubon-duponey/base:builder-bullseye-2021-06-01@sha256:addbd9b89d8973df985d2d95e22383961ba7b9c04580ac6a7f406a3a9ec4731e
-ARG           FROM_IMAGE_RUNTIME=ghcr.io/dubo-dubon-duponey/base:runtime-bullseye-2021-06-01@sha256:a2b1b2f69ed376bd6ffc29e2d240e8b9d332e78589adafadb84c73b778e6bc77
+ARG           FROM_REGISTRY=ghcr.io/dubo-dubon-duponey
+
+ARG           FROM_IMAGE_BUILDER=base:builder-bullseye-2021-07-01@sha256:f1c46316c38cc1ca54fd53b54b73797b35ba65ee727beea1a5ed08d0ad7e8ccf
+ARG           FROM_IMAGE_RUNTIME=base:runtime-bullseye-2021-07-01@sha256:9f5b20d392e1a1082799b3befddca68cee2636c72c502aa7652d160896f85b36
+ARG           FROM_IMAGE_TOOLS=tools:linux-bullseye-2021-07-01@sha256:f1e25694fe933c7970773cb323975bb5c995fa91d0c1a148f4f1c131cbc5872c
+
+FROM          $FROM_REGISTRY/$FROM_IMAGE_TOOLS                                                                          AS builder-tools
 
 #######################
-# Extra builder for healthchecker
+# Fetcher
 #######################
-FROM          --platform=$BUILDPLATFORM $FROM_IMAGE_BUILDER                                                             AS builder-healthcheck
+FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_BUILDER                                              AS fetcher-alac
 
-ARG           GIT_REPO=github.com/dubo-dubon-duponey/healthcheckers
-ARG           GIT_VERSION=51ebf8c
-ARG           GIT_COMMIT=51ebf8ca3d255e0c846307bf72740f731e6210c3
-ARG           GO_BUILD_SOURCE=./cmd/rtsp
-ARG           GO_BUILD_OUTPUT=rtsp-health
-ARG           GO_LD_FLAGS="-s -w"
-ARG           GO_TAGS="netgo osusergo"
+ENV           GIT_REPO=github.com/mikebrady/alac
+ENV           GIT_VERSION=5d6d836
+ENV           GIT_COMMIT=5d6d836ee5b025a5e538cfa62c88bc5bced506ed
 
-WORKDIR       $GOPATH/src/$GIT_REPO
-RUN           git clone --recurse-submodules git://"$GIT_REPO" . && git checkout "$GIT_COMMIT"
-ARG           GOOS="$TARGETOS"
-ARG           GOARCH="$TARGETARCH"
+RUN           git clone --recurse-submodules git://"$GIT_REPO" .
+RUN           git checkout "$GIT_COMMIT"
 
-# hadolint ignore=SC2046
-RUN           env GOARM="$(printf "%s" "$TARGETVARIANT" | tr -d v)" go build -trimpath $(if [ "$CGO_ENABLED" = 1 ]; then printf "%s" "-buildmode pie"; fi) \
-                -ldflags "$GO_LD_FLAGS" -tags "$GO_TAGS" -o /dist/boot/bin/"$GO_BUILD_OUTPUT" "$GO_BUILD_SOURCE"
+#######################
+# Fetcher
+#######################
+FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_BUILDER                                              AS fetcher-shairport
+
+ENV           GIT_REPO=github.com/mikebrady/shairport-sync
+ENV           GIT_VERSION=v3.3.8
+ENV           GIT_COMMIT=f496ca664ef133d428fc80fa3f718244a3916a64
+
+RUN           git clone --recurse-submodules git://"$GIT_REPO" .
+RUN           git checkout "$GIT_COMMIT"
+
+# hadolint ignore=DL3009
+RUN           --mount=type=secret,uid=100,id=CA \
+              --mount=type=secret,uid=100,id=CERTIFICATE \
+              --mount=type=secret,uid=100,id=KEY \
+              --mount=type=secret,uid=100,id=GPG.gpg \
+              --mount=type=secret,id=NETRC \
+              --mount=type=secret,id=APT_SOURCES \
+              --mount=type=secret,id=APT_CONFIG \
+              apt-get update -qq; \
+              for architecture in armel armhf arm64 ppc64el i386 s390x amd64; do \
+                apt-get install -qq --no-install-recommends \
+                  libpopt-dev:"$architecture"=1.18-2 \
+                  libconfig-dev:"$architecture"=1.5-0.4 \
+                  libasound2-dev:"$architecture"=1.2.4-1.1 \
+                  libsoxr-dev:"$architecture"=0.1.3-4 \
+                  libssl-dev:"$architecture"=1.1.1k-1 \
+                  libcrypto++-dev:"$architecture"=8.4.0-1; \
+              done
 
 #######################
 # Building image
 #######################
-# XXX compile all that statically and x-pile
-FROM          $FROM_IMAGE_BUILDER                                                                                       AS builder-alac
+FROM          --platform=$BUILDPLATFORM fetcher-alac                                                                    AS builder-alac
 
-# ALAC from apple: Feb 2019
-ARG           GIT_REPO=github.com/mikebrady/alac
-ARG           GIT_VERSION=5d6d836
-ARG           GIT_COMMIT=5d6d836ee5b025a5e538cfa62c88bc5bced506ed
+ARG           TARGETARCH
+ARG           TARGETOS
+ARG           TARGETVARIANT
 
-WORKDIR       $GOPATH/src/$GIT_REPO
-RUN           git clone --recurse-submodules git://"$GIT_REPO" . && git checkout "$GIT_COMMIT"
-
-RUN           mkdir -p m4 \
+# hadolint ignore=SC2046
+RUN           DEB_TARGET_ARCH="$(echo "$TARGETARCH$TARGETVARIANT" | sed -e "s/armv6/armel/" -e "s/armv7/armhf/" -e "s/ppc64le/ppc64el/" -e "s/386/i386/")"; \
+              eval "$(dpkg-architecture -A "$DEB_TARGET_ARCH")"; \
+              export PKG_CONFIG="${DEB_TARGET_GNU_TYPE}-pkg-config"; \
+              export CC="${DEB_TARGET_GNU_TYPE}-gcc"; \
+              export CXX="${DEB_TARGET_GNU_TYPE}-g++"; \
+              mkdir -p m4 \
                 && autoreconf -fi \
-                && ./configure \
+                && ./configure --prefix=/dist/boot/ --host="$DEB_TARGET_GNU_TYPE" \
                 && make \
                 && make install
 
-RUN           mkdir -p /dist/boot/lib; cp /usr/local/lib/libalac.so.0 /dist/boot/lib
 
-# TODO move the other libraries in as well to avoid installation in the runtime image
-# XXX libasound-data does install more stuff than just the lib
-# RUN           cp /usr/lib/"$(gcc -dumpmachine)"/libasound.so.2  .
+FROM          --platform=$BUILDPLATFORM fetcher-shairport                                                               AS builder-shairport
 
-#######################
-# Building image
-#######################
-FROM          $FROM_IMAGE_BUILDER                                                                                       AS builder-shairport
+ARG           TARGETARCH
+ARG           TARGETOS
+ARG           TARGETVARIANT
 
-# shairport-sync: v3.3.8
-ARG           GIT_REPO=github.com/mikebrady/shairport-sync
-ARG           GIT_VERSION=c19f697
-ARG           GIT_COMMIT=c19f697be2b6761616876787064d6b067cf87089
+# Get the alac library over
+COPY          --from=builder-alac /dist/boot /dist/boot
 
-WORKDIR       $GOPATH/src/$GIT_REPO
-RUN           git clone --recurse-submodules git://"$GIT_REPO" . && git checkout "$GIT_COMMIT"
+ENV           PKG_CONFIG_PATH="$PKG_CONFIG_PATH":/dist/boot/lib/pkgconfig
+ENV           CPATH=/dist/boot/include
 
-RUN           --mount=type=secret,mode=0444,id=CA,dst=/etc/ssl/certs/ca-certificates.crt \
-              --mount=type=secret,id=CERTIFICATE \
-              --mount=type=secret,id=KEY \
-              --mount=type=secret,id=PASSPHRASE \
-              --mount=type=secret,mode=0444,id=GPG.gpg \
-              --mount=type=secret,id=NETRC \
-              --mount=type=secret,id=APT_SOURCES \
-              --mount=type=secret,id=APT_OPTIONS,dst=/etc/apt/apt.conf.d/dbdbdp.conf \
-              apt-get update -qq && \
-              apt-get install -qq --no-install-recommends \
-                libasound2-dev=1.2.4-1.1 \
-                libpopt-dev=1.18-2 \
-                libsoxr-dev=0.1.3-4 \
-                libconfig-dev=1.5-0.4 \
-                libssl-dev=1.1.1k-1 \
-                libcrypto++-dev=8.4.0-1
-
-# XXX Do we really want libsoxr?
-# stdout & pipe blindly added to possibly benefit snapcasters
-# if feasible, get rid of the mdns stack here
-RUN           autoreconf -fi \
-                && ./configure \
+#  dynamic, with debug_info, not stripped
+RUN           DEB_TARGET_ARCH="$(echo "$TARGETARCH$TARGETVARIANT" | sed -e "s/armv6/armel/" -e "s/armv7/armhf/" -e "s/ppc64le/ppc64el/" -e "s/386/i386/")"; \
+              eval "$(dpkg-architecture -A "$DEB_TARGET_ARCH")"; \
+              export PKG_CONFIG="${DEB_TARGET_GNU_TYPE}-pkg-config"; \
+              export CC="${DEB_TARGET_GNU_TYPE}-gcc"; \
+              export CXX="${DEB_TARGET_GNU_TYPE}-g++"; \
+              autoreconf -fi; \
+              ./configure \
+                  --host="$DEB_TARGET_GNU_TYPE" \
+                  --prefix=/dist/boot \
                   --with-alsa \
                   --with-pipe \
                   --with-stdout \
-                  --with-tinysvcmdns \
                   --with-ssl=openssl \
                   --with-soxr \
-                  --with-piddir=/data/pid \
+                  --with-tinysvcmdns \
                   --with-apple-alac \
+                  --with-metadata \
+                  --with-piddir=/data/pid \
                   --sysconfdir=/config \
                 && make \
                 && make install
 
-RUN           mkdir -p /dist/boot/bin; cp /usr/local/bin/shairport-sync /dist/boot/bin
-
+#XXX $(gcc -dumpmachine)
+RUN           cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libsoxr.so.0  /dist/boot/lib
+RUN           cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libcrypto.so.1.1  /dist/boot/lib
+RUN           cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libconfig.so.9  /dist/boot/lib
+RUN           cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libpopt.so.0  /dist/boot/lib
+RUN           cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libgomp.so.1  /dist/boot/lib
 
 #######################
-# Building image
+# Builder assembly, XXX should be auditor
 #######################
-FROM          $FROM_IMAGE_BUILDER                                                                                       AS builder
+FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_BUILDER                                              AS builder
 
-COPY          --from=builder-healthcheck /dist/boot/bin /dist/boot/bin
-COPY          --from=builder-alac /dist/boot /dist/boot
-COPY          --from=builder-shairport /dist/boot/bin /dist/boot/bin
+COPY          --from=builder-shairport  /dist/boot /dist/boot
+
+COPY          --from=builder-tools      /boot/bin/rtsp-health    /dist/boot/bin
 
 RUN           chmod 555 /dist/boot/bin/*; \
               epoch="$(date --date "$BUILD_CREATED" +%s)"; \
-              find /dist/boot/bin -newermt "@$epoch" -exec touch --no-dereference --date="@$epoch" '{}' +;
+              find /dist/boot -newermt "@$epoch" -exec touch --no-dereference --date="@$epoch" '{}' +;
+
 
 #######################
 # Running image
 #######################
-FROM          $FROM_IMAGE_RUNTIME
+FROM          $FROM_REGISTRY/$FROM_IMAGE_RUNTIME
 
 USER          root
 
-RUN           apt-get update -qq \
+RUN           --mount=type=secret,uid=100,id=CA \
+              --mount=type=secret,uid=100,id=CERTIFICATE \
+              --mount=type=secret,uid=100,id=KEY \
+              --mount=type=secret,uid=100,id=GPG.gpg \
+              --mount=type=secret,id=NETRC \
+              --mount=type=secret,id=APT_SOURCES \
+              --mount=type=secret,id=APT_CONFIG \
+              apt-get update -qq \
               && apt-get install -qq --no-install-recommends \
                 libasound2=1.2.4-1.1 \
-                libpopt0=1.18-2 \
-                libsoxr0=0.1.3-4 \
-                libconfig9=1.5-0.4 \
-                libssl1.1=1.1.1k-1 \
               && apt-get -qq autoremove       \
               && apt-get -qq clean            \
               && rm -rf /var/lib/apt/lists/*  \
