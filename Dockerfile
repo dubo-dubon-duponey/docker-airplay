@@ -101,7 +101,7 @@ RUN           DEB_TARGET_ARCH="$(echo "$TARGETARCH$TARGETVARIANT" | sed -e "s/ar
                   --with-tinysvcmdns \
                   --with-apple-alac \
                   --with-metadata \
-                  --with-piddir=/data/pid \
+                  --with-piddir=/tmp/pid \
                   --sysconfdir=/config \
                 && make \
                 && make install
