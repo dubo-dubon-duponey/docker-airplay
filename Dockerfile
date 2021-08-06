@@ -115,7 +115,7 @@ RUN           eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" |
               cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libgomp.so.1  /dist/boot/lib
 
 #######################
-# Builder assembly, XXX should be auditor
+# Builder assembly
 #######################
 FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_AUDITOR                                              AS builder
 
@@ -134,11 +134,8 @@ RUN           chmod 555 /dist/boot/bin/*; \
 #######################
 FROM          $FROM_REGISTRY/$FROM_IMAGE_RUNTIME
 
-# USER          root
-# USER          dubo-dubon-duponey
 COPY          --from=builder --chown=$BUILD_UID:root /dist /
 
-### mDNS broadcasting
 # Name is used as a short description for the service
 ENV           MDNS_NAME="TotaleCroquette"
 
