@@ -30,11 +30,6 @@ cakes: {
 
 			output: {
 				images: {
-					registries: {...} | * {
-						"push-registry.local": "dubo-dubon-duponey",
-						"ghcr.io": "dubo-dubon-duponey",
-						"docker.io": "dubodubonduponey"
-					},
 					names: [...string] | * ["shairport-sync"],
 					tags: [...string] | * ["latest"]
 				}
@@ -62,11 +57,6 @@ cakes: image: recipe: {
 		process: platforms: strings.Split(injectors.platforms, ",")
 	}
 
-	output: images: registries: {
-		"push-registry.local": "dubo-dubon-duponey",
-		"ghcr.io": "dubo-dubon-duponey",
-		"docker.io": "dubodubonduponey"
-	}
 
 	output: images: tags: [injectors.suite + "-" + injectors.date, injectors.suite + "-latest", "latest"]
 	metadata: ref_name: injectors.suite + "-" + injectors.date
