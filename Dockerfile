@@ -2,7 +2,7 @@ ARG           FROM_REGISTRY=ghcr.io/dubo-dubon-duponey
 
 ARG           FROM_IMAGE_BUILDER=base:builder-bullseye-2021-08-01@sha256:f492d8441ddd82cad64889d44fa67cdf3f058ca44ab896de436575045a59604c
 ARG           FROM_IMAGE_RUNTIME=base:runtime-bullseye-2021-08-01@sha256:edc80b2c8fd94647f793cbcb7125c87e8db2424f16b9fd0b8e173af850932b48
-ARG           FROM_IMAGE_AUDITOR=base:auditor-bullseye-2021-08-01@sha256:a9adfa210235133d99bf06fab9a631cd6d44ee3aed6b081ad61b342fcc7d189c
+ARG           FROM_IMAGE_AUDITOR=base:auditor-bullseye-2021-08-01@sha256:a442014ef77c719308c08b9b9370ea5d2b884f4ced78ec82feaaa3a6424439e4
 ARG           FROM_IMAGE_FETCHER=base:golang-bullseye-2021-08-01@sha256:820caa12223eb2f1329736bcba8f1ac96a8ab7db37370cbe517dbd1d9f6ca606
 ARG           FROM_IMAGE_TOOLS=tools:linux-bullseye-2021-08-01@sha256:87ec12fe94a58ccc95610ee826f79b6e57bcfd91aaeb4b716b0548ab7b2408a7
 
@@ -126,9 +126,6 @@ RUN           eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" |
 #######################
 FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_AUDITOR                                              AS builder
 
-ARG           TARGETARCH
-ARG           TARGETVARIANT
-
 COPY          --from=builder-shairport  /dist/boot            /dist/boot
 COPY          --from=builder-shairport  /usr/share/alsa       /dist/usr/share/alsa
 COPY          --from=builder-tools      /boot/bin/rtsp-health /dist/boot/bin
@@ -149,9 +146,6 @@ RUN           chmod 555 /dist/boot/bin/*; \
 
 # XXX maybe port in auditor
 ARG           LD_LIBRARY_PATH=/dist/boot/lib:$LD_LIBRARY_PATH
-
-# XXX definitely port in auditor
-COPY          ./build/dubo-check /usr/bin/
 
 RUN           BIND_NOW=true PIE=true STACK_PROTECTED=true FORTIFIED=true RO_RELOCATIONS=true NO_SYSTEM_LINK=true \
                 dubo-check validate /dist/boot/bin/shairport-sync; \
