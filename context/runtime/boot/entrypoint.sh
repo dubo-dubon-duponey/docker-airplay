@@ -7,12 +7,9 @@ set -o errexit -o errtrace -o functrace -o nounset -o pipefail
   exit 1
 }
 
-rm -Rf /tmp/pid
-mkdir -p /tmp/pid
+args=(--port "$PORT" --output "$OUTPUT" --name "$MDNS_NAME" --use-stderr --mdns tinysvcmdns --configfile /config/shairport-sync/main.conf)
 
 LOG_LEVEL="$(printf "%s" "$LOG_LEVEL" | tr '[:upper:]' '[:lower:]')"
-
-args=(--port "$PORT" --output "$OUTPUT" --name "$MDNS_NAME" --use-stderr --mdns tinysvcmdns --configfile /config/shairport-sync/main.conf)
-[ "$LOG_LEVEL" != "debug" ] || args+=(${DEBUG:--vvv --statistics})
+[ "$LOG_LEVEL" != "debug" ] || args+=(-vvv --statistics)
 
 exec shairport-sync "${args[@]}" "$@"

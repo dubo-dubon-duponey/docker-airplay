@@ -1,10 +1,10 @@
 ARG           FROM_REGISTRY=ghcr.io/dubo-dubon-duponey
 
-ARG           FROM_IMAGE_BUILDER=base:builder-bullseye-2021-08-01@sha256:f492d8441ddd82cad64889d44fa67cdf3f058ca44ab896de436575045a59604c
-ARG           FROM_IMAGE_RUNTIME=base:runtime-bullseye-2021-08-01@sha256:edc80b2c8fd94647f793cbcb7125c87e8db2424f16b9fd0b8e173af850932b48
-ARG           FROM_IMAGE_AUDITOR=base:auditor-bullseye-2021-08-01@sha256:a442014ef77c719308c08b9b9370ea5d2b884f4ced78ec82feaaa3a6424439e4
 ARG           FROM_IMAGE_FETCHER=base:golang-bullseye-2021-08-01@sha256:820caa12223eb2f1329736bcba8f1ac96a8ab7db37370cbe517dbd1d9f6ca606
+ARG           FROM_IMAGE_BUILDER=base:builder-bullseye-2021-08-01@sha256:f492d8441ddd82cad64889d44fa67cdf3f058ca44ab896de436575045a59604c
 ARG           FROM_IMAGE_TOOLS=tools:linux-bullseye-2021-08-01@sha256:87ec12fe94a58ccc95610ee826f79b6e57bcfd91aaeb4b716b0548ab7b2408a7
+ARG           FROM_IMAGE_AUDITOR=base:auditor-bullseye-2021-08-01@sha256:701da0f301d57910c28dadae2f03ca4d788cadd2ce192b6ec7aae80232081fe9
+ARG           FROM_IMAGE_RUNTIME=base:runtime-bullseye-2021-08-01@sha256:edc80b2c8fd94647f793cbcb7125c87e8db2424f16b9fd0b8e173af850932b48
 
 FROM          $FROM_REGISTRY/$FROM_IMAGE_TOOLS                                                                          AS builder-tools
 
@@ -39,7 +39,6 @@ COPY          --from=fetcher-alac /source /source
 
 # hadolint ignore=SC2046
 RUN           eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" | sed -e "s/^armv6$/armel/" -e "s/^armv7$/armhf/" -e "s/^ppc64le$/ppc64el/" -e "s/^386$/i386/")")"; \
-              eval "$(dpkg-architecture -A "$DEB_TARGET_ARCH")"; \
               export PKG_CONFIG="${DEB_TARGET_GNU_TYPE}-pkg-config"; \
               export CC="${DEB_TARGET_GNU_TYPE}-gcc"; \
               export CXX="${DEB_TARGET_GNU_TYPE}-g++"; \
@@ -50,7 +49,6 @@ RUN           eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" |
                 --host="$DEB_TARGET_GNU_TYPE"; \
               make; \
               make install
-
 
 FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_BUILDER                                              AS builder-shairport
 
@@ -115,7 +113,7 @@ RUN           eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" |
                 --with-tinysvcmdns \
                 --with-apple-alac \
                 --with-metadata \
-                --with-piddir=/tmp/pid \
+                --with-piddir=/tmp \
                 --sysconfdir=/config \
                 --with-pkg-config; \
               make; \
@@ -124,7 +122,10 @@ RUN           eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" |
 #######################
 # Builder assembly
 #######################
-FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_AUDITOR                                              AS builder
+FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_AUDITOR                                              AS assembly
+
+ARG           TARGETARCH
+ARG           TARGETVARIANT
 
 COPY          --from=builder-shairport  /dist/boot            /dist/boot
 COPY          --from=builder-shairport  /usr/share/alsa       /dist/usr/share/alsa
@@ -134,22 +135,16 @@ RUN           chmod 555 /dist/boot/bin/*; \
               epoch="$(date --date "$BUILD_CREATED" +%s)"; \
               find /dist/boot -newermt "@$epoch" -exec touch --no-dereference --date="@$epoch" '{}' +;
 
-# Maybe add that to auditor in the form of profiles?
-#ARG           RUNNING=true
-#ARG           BIND_NOW=""
-#ARG           PIE=""
-#ARG           STACK_PROTECTED=""
-#ARG           FORTIFIED=""
-#ARG           RO_RELOCATIONS=""
-#ARG           STATIC=""
-#ARG           NO_SYSTEM_LINK=""
+RUN           BIND_NOW=true \
+              PIE=true \
+              FORTIFIED=true \
+              STACK_PROTECTED=true \
+              STACK_CLASH=true \
+              RO_RELOCATIONS=true \
+              NO_SYSTEM_LINK=true \
+                dubo-check validate /dist/boot/bin/shairport-sync
 
-# XXX maybe port in auditor
-ARG           LD_LIBRARY_PATH=/dist/boot/lib:$LD_LIBRARY_PATH
-
-RUN           BIND_NOW=true PIE=true STACK_PROTECTED=true FORTIFIED=true RO_RELOCATIONS=true NO_SYSTEM_LINK=true \
-                dubo-check validate /dist/boot/bin/shairport-sync; \
-              STATIC=true \
+RUN           STATIC=true \
                 dubo-check validate /dist/boot/bin/rtsp-health
 
 #######################
@@ -157,7 +152,7 @@ RUN           BIND_NOW=true PIE=true STACK_PROTECTED=true FORTIFIED=true RO_RELO
 #######################
 FROM          $FROM_REGISTRY/$FROM_IMAGE_RUNTIME
 
-COPY          --from=builder --chown=$BUILD_UID:root /dist /
+COPY          --from=assembly --chown=$BUILD_UID:root /dist /
 
 # (alsa|stdout|pipe)
 ENV           OUTPUT=alsa
@@ -165,7 +160,6 @@ ENV           OUTPUT=alsa
 # Name is used as a short description for the service
 ENV           MDNS_NAME="Totales Croquetas"
 ENV           LOG_LEVEL=warn
-ENV           DEBUG="-vvv --statistics"
 ENV           PORT=5000
 
 ENV           HEALTHCHECK_URL=rtsp://127.0.0.1:$PORT
