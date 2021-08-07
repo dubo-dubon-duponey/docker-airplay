@@ -77,13 +77,13 @@ RUN           --mount=type=secret,uid=100,id=CA \
 # Bring in runtime dependencies
 RUN           eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" | sed -e "s/^armv6$/armel/" -e "s/^armv7$/armhf/" -e "s/^ppc64le$/ppc64el/" -e "s/^386$/i386/")")"; \
               mkdir -p /dist/boot/lib; \
-              cp /usr/lib/"$DEB_TARGET_GNU_TYPE"/libasound.so.2   /dist/boot/lib; \
-              cp /usr/lib/"$DEB_TARGET_GNU_TYPE"/libsoxr.so.0     /dist/boot/lib; \
-              cp /usr/lib/"$DEB_TARGET_GNU_TYPE"/libcrypto.so.1.1 /dist/boot/lib; \
-              cp /usr/lib/"$DEB_TARGET_GNU_TYPE"/libconfig.so.9   /dist/boot/lib; \
-              cp /usr/lib/"$DEB_TARGET_GNU_TYPE"/libpopt.so.0     /dist/boot/lib; \
-              cp /usr/lib/"$DEB_TARGET_GNU_TYPE"/libgomp.so.1     /dist/boot/lib; \
-              cp /usr/lib/"$DEB_TARGET_GNU_TYPE"/libstdc++.so.6   /dist/boot/lib
+              cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libasound.so.2   /dist/boot/lib; \
+              cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libsoxr.so.0     /dist/boot/lib; \
+              cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libcrypto.so.1.1 /dist/boot/lib; \
+              cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libconfig.so.9   /dist/boot/lib; \
+              cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libpopt.so.0     /dist/boot/lib; \
+              cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libgomp.so.1     /dist/boot/lib; \
+              cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libstdc++.so.6   /dist/boot/lib
 
 # Get the alac library we just built
 COPY          --from=builder-alac /dist/boot /dist/boot
@@ -135,11 +135,11 @@ RUN           chmod 555 /dist/boot/bin/*; \
               epoch="$(date --date "$BUILD_CREATED" +%s)"; \
               find /dist/boot -newermt "@$epoch" -exec touch --no-dereference --date="@$epoch" '{}' +;
 
-RUN           BIND_NOW=true \
+RUN           [ "$TARGETARCH" == "arm64" ] || [ "$TARGETARCH" == "arm" ] || export STACK_CLASH=true; \
+              BIND_NOW=true \
               PIE=true \
               FORTIFIED=true \
               STACK_PROTECTED=true \
-              STACK_CLASH=true \
               RO_RELOCATIONS=true \
               NO_SYSTEM_LINK=true \
                 dubo-check validate /dist/boot/bin/shairport-sync
