@@ -15,7 +15,7 @@ if ! "$root/hack/build.sh" \
     --inject progress=plain \
 	  --inject date=2021-08-01 \
 	  --inject suite=bullseye \
-    --inject platforms=linux/arm64 \
+    --inject platforms=linux/amd64 \
   	"$name" "$@"; then
   printf >&2 "Failed building\n"
   exit 1
