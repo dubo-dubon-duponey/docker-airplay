@@ -135,7 +135,7 @@ RUN           chmod 555 /dist/boot/bin/*; \
               epoch="$(date --date "$BUILD_CREATED" +%s)"; \
               find /dist/boot -newermt "@$epoch" -exec touch --no-dereference --date="@$epoch" '{}' +;
 
-RUN           [ "$TARGETARCH" == "arm64" ] || [ "$TARGETARCH" == "arm" ] || export STACK_CLASH=true; \
+RUN           [ "$TARGETARCH" == "arm64" ] || [ "$TARGETARCH" == "arm" ] || [ "$TARGETARCH" == "386" ] || [ "$TARGETARCH" == "ppc64le" ] || export STACK_CLASH=true; \
               BIND_NOW=true \
               PIE=true \
               FORTIFIED=true \

@@ -8,15 +8,15 @@ This is based on [shairport-sync](https://github.com/mikebrady/shairport-sync) a
 
 * multi-architecture:
   * [x] linux/amd64
-  * [x] linux/386
   * [x] linux/arm64
   * [x] linux/arm/v7
-  * [x] linux/arm/v6
-  * [x] linux/ppc64
-  * [x] linux/s390x
+  * [x] linux/arm/v6 (builds, but disabled in the published image)
+  * [x] linux/386 (builds, but disabled in the published image)
+  * [x] linux/ppc64le (builds, but disabled in the published image)
+  * [ ] linux/s390x (probably builds, but our rtsp-healthchecker does not)
 * hardened:
   * [x] image runs read-only
-  * [x] image runs with no capabilities (unless you want it on port 443)
+  * [x] image runs with no capabilities (unless you want it on a privileged port)
   * [x] process runs as a non-root user, disabled login, no shell
   * [x] binaries are compiled with PIE, bind now, stack protection, fortify source and read-only relocations (additionally stack clash protection on amd64)
 * lightweight
