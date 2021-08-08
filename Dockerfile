@@ -125,7 +125,6 @@ RUN           eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" |
 FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_AUDITOR                                              AS assembly
 
 ARG           TARGETARCH
-ARG           TARGETVARIANT
 
 COPY          --from=builder-shairport  /dist/boot            /dist/boot
 COPY          --from=builder-shairport  /usr/share/alsa       /dist/usr/share/alsa
@@ -135,7 +134,7 @@ RUN           chmod 555 /dist/boot/bin/*; \
               epoch="$(date --date "$BUILD_CREATED" +%s)"; \
               find /dist/boot -newermt "@$epoch" -exec touch --no-dereference --date="@$epoch" '{}' +;
 
-RUN           [ "$TARGETARCH" == "arm64" ] || [ "$TARGETARCH" == "arm" ] || [ "$TARGETARCH" == "386" ] || [ "$TARGETARCH" == "ppc64le" ] || export STACK_CLASH=true; \
+RUN           [ "$TARGETARCH" != "amd64" ] || export STACK_CLASH=true; \
               BIND_NOW=true \
               PIE=true \
               FORTIFIED=true \
