@@ -30,14 +30,14 @@ cakes: {
 
 			output: {
 				images: {
-					names: [...string] | * ["shairport-sync"],
+					names: [...string] | * ["airplay"],
 					tags: [...string] | * ["latest"]
 				}
 			}
 
 			metadata: {
-				title: string | * "Dubo Shairport Sync",
-				description: string | * "A dubo image for Shairport Sync",
+				title: string | * "Dubo Airplay",
+				description: string | * "A dubo image for Airplay",
 			}
 		}
   }

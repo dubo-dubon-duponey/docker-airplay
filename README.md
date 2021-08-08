@@ -39,7 +39,7 @@ docker run -d --rm \
     --net host \
     --cap-drop ALL \
     --read-only \
-    dubodubonduponey/shairport-sync
+    dubodubonduponey/airplay
 ```
 
 ## Notes
@@ -62,7 +62,7 @@ Any additional arguments passed when running the image will get fed to the `shai
 You can get a full list of supported arguments by simply calling
 
 ```
-docker run --rm dubodubonduponey/shairport-sync --help
+docker run --rm dubodubonduponey/airplay --help
 ```
 
 This is specifically convenient for example to address a different Alsa card or mixer (eg: `-- -d hw:1`).
