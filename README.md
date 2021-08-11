@@ -2,7 +2,9 @@
 
 A Docker image to run an Apple AirPlay receiver.
 
-This is based on [shairport-sync](https://github.com/mikebrady/shairport-sync) and the [ALAC](https://github.com/mikebrady/alac) library.
+This is currently based on [shairport-sync](https://github.com/mikebrady/shairport-sync) and the [ALAC](https://github.com/mikebrady/alac) library.
+
+This image also ships experimental support for airplay2 based on [goplay2](https://github.com/openairplay/goplay2).
 
 ## Image features
 
@@ -10,23 +12,25 @@ This is based on [shairport-sync](https://github.com/mikebrady/shairport-sync) a
   * [x] linux/amd64
   * [x] linux/arm64
   * [x] linux/arm/v7
-  * [x] linux/arm/v6 (builds, but disabled in the published image)
-  * [x] linux/386 (builds, but disabled in the published image)
-  * [x] linux/ppc64le (builds, but disabled in the published image)
-  * [ ] linux/s390x (probably builds, but our rtsp-healthchecker does not)
+  * [x] linux/arm/v6
 * hardened:
   * [x] image runs read-only
-  * [x] image runs with no capabilities (unless you want it on a privileged port)
+  * [x] image runs with no capabilities (unless you want it on a privileged port, in which case you need to grant NET_BIND_SERVICE)
   * [x] process runs as a non-root user, disabled login, no shell
   * [x] binaries are compiled with PIE, bind now, stack protection, fortify source and read-only relocations (additionally stack clash protection on amd64)
 * lightweight
-  * [x] based on our slim [Debian bullseye version (2021-08-01)](https://github.com/dubo-dubon-duponey/docker-debian)
+  * [x] based on our slim [Debian Bullseye](https://github.com/dubo-dubon-duponey/docker-debian)
   * [x] simple entrypoint script
   * [x] multi-stage build with no installed dependencies for the runtime image
 * observable
   * [x] healthcheck
   * [x] logs to stdout
   * [ ] ~~prometheus endpoint~~
+
+* unsupported / not enabled:
+  * [ ] linux/386: probably builds, but disabled by default
+  * [ ] linux/ppc64le: probably builds, but disabled by default
+  * [ ] linux/s390x probably builds, but our healthcheckers do not
 
 ## Run
 
@@ -52,14 +56,14 @@ You need to run this in `host` or `mac(or ip)vlan` networking (because of mDNS).
 
 The following environment variables allow for high-level control over shairport:
 
-* LOG_LEVEL if set to "debug" will pass along -vvv and --statistics
 * OUTPUT (alsa|pipe|stdout) controls the output
+* LOG_LEVEL if set to "debug" will pass along -vvv and --statistics
 * MDNS_NAME controls the announced name
 * PORT controls the port to bind to
 
 Any additional arguments passed when running the image will get fed to the `shairport-sync` binary directly.
 
-You can get a full list of supported arguments by simply calling
+You can get a full list of supported arguments with:
 
 ```
 docker run --rm dubodubonduponey/airplay --help
@@ -95,12 +99,27 @@ we advise against using it on low-end hardware and do rely on "basic" instead by
 If you want to use soxr, just pass it as an extra argument ("--stuffing=soxr") or change the config file
 corresponding setting.
 
-### About Airplay 2
+### About mDNS
 
-Unsupported right now, and it appears unlikely to be implemented in shairport-sync for the time being.
+We do not support Avahi, and instead rely on tinymdns.
+Setting-up avahi in a container is doable (and we did before in this image), but it's a PITA and
+requires you to setup dbus and an avahi daemon process on top of shairport, so, no thank you.
+
+### Experimental Airplay 2 support
+
+shairport-sync does not support it right now, and it appears unlikely to be implemented for the time being.
 See https://github.com/mikebrady/shairport-sync/issues/535 for details.
 
-Alternative projects like https://github.com/openairplay/ may have proper support one day, but are untested by us right now.
+If you set AIRPLAY_VERSION=2, goplay2 is used instead of shairport-sync.
+
+Caveats:
+* this is largely experimental at this point, and probably buggy
+* goplay2 ignores the following: OUTPUT and PORT
+* goplay2 does require NET_BIND_SERVICE to work properly
+* goplay2 requires pulseaudio to be installed in the runtime image
+* goplay2 is not compiled the way it should, and has a number of issues:
+  * it will create its configuration and write data under the current working directory
+  * config and data are mixed in the same location
 
 ## Moar?
 
