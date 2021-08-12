@@ -20,9 +20,16 @@ helpers::dbus(){
 }
 
 if [ "${AIRPLAY_VERSION:-}" == 2 ]; then
+  # Pulse will create the socket in /tmp/pulse/native
+  export XDG_RUNTIME_DIR=/tmp/pulse-socket
+  mkdir -p "$XDG_RUNTIME_DIR"
+  mkdir -p /tmp/pulse-config
   helpers::dbus
-  HOME=/tmp pulseaudio --start
+  HOME=/tmp/pulse-config pulseaudio --start
+  # XXX
+  sleep 5
   cd /tmp
+  export PULSE_SERVER="$XDG_RUNTIME_DIR"/pulse/native
   exec goplay2 -n "$MDNS_NAME" "$@"
 fi
 
