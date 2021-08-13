@@ -295,10 +295,13 @@ RUN           --mount=type=secret,uid=100,id=CA \
               rm -rf /tmp/*               && \
               rm -rf /var/tmp/*
 
+# Do we even need dbus?
 RUN           dbus-uuidgen --ensure \
               && mkdir -p /run/dbus \
               && chown "$BUILD_UID":root /run/dbus \
               && chmod 775 /run/dbus
+
+RUN           printf "load-module module-alsa-sink device=default\nload-module module-alsa-source device=default\nload-module module-native-protocol-unix\n"  /etc/pulse/default.pa
 
 USER          dubo-dubon-duponey
 
