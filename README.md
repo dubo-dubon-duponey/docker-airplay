@@ -1,10 +1,10 @@
 # What
 
-A Docker image to run an Apple AirPlay receiver.
+A Docker image to run an Apple AirPlay Protocol receiver.
 
 This is currently based on [shairport-sync](https://github.com/mikebrady/shairport-sync) and the [ALAC](https://github.com/mikebrady/alac) library.
 
-This image also ships experimental support for airplay2 based on [goplay2](https://github.com/openairplay/goplay2).
+This image also ships experimental support for Airplay 2 based on [goplay2](https://github.com/openairplay/goplay2).
 
 ## Image features
 
@@ -15,9 +15,9 @@ This image also ships experimental support for airplay2 based on [goplay2](https
   * [x] linux/arm/v6
 * hardened:
   * [x] image runs read-only
-  * [x] image runs with no capabilities (unless you want it on a privileged port, in which case you need to grant NET_BIND_SERVICE)
+  * [x] image runs with no cap
   * [x] process runs as a non-root user, disabled login, no shell
-  * [x] binaries are compiled with PIE, bind now, stack protection, fortify source and read-only relocations (additionally stack clash protection on amd64)
+  * [x] shairport-sync is compiled with PIE, bind now, stack protection, fortify source and read-only relocations (additionally stack clash protection on amd64)
 * lightweight
   * [x] based on our slim [Debian Bullseye](https://github.com/dubo-dubon-duponey/docker-debian)
   * [x] simple entrypoint script
@@ -25,19 +25,14 @@ This image also ships experimental support for airplay2 based on [goplay2](https
 * observable
   * [x] healthcheck
   * [x] logs to stdout
-  * [ ] ~~prometheus endpoint~~
-
-* unsupported / not enabled:
-  * [ ] linux/386: probably builds, but disabled by default
-  * [ ] linux/ppc64le: probably builds, but disabled by default
-  * [ ] linux/s390x probably builds, but our healthcheckers do not
+* other achitectures (386, ppc64le, s390x) probably build as well, though they are disabled by default
 
 ## Run
 
 ```bash
 docker run -d --rm \
-    --name "airport" \
-    --env NAME="My Fancy Airplay Receiver" \
+    --name "airplay" \
+    --env MDNS_NAME="My Fancy Airplay Receiver" \
     --group-add audio \
     --device /dev/snd \
     --net host \
@@ -65,7 +60,7 @@ Any additional arguments passed when running the image will get fed to the `shai
 
 You can get a full list of supported arguments with:
 
-```
+```bash
 docker run --rm dubodubonduponey/airplay --help
 ```
 
@@ -120,6 +115,22 @@ Caveats:
 * goplay2 is not compiled the way it should, and has a number of issues:
   * it will create its configuration and write data under the current working directory
   * config and data are mixed in the same location
+
+To start goplay2:
+
+```bash
+docker run -d --rm \
+--name "airplay2" \
+--env MDNS_NAME="My Fancy Airplay 2 Receiver" \
+--group-add audio \
+--device /dev/snd \
+--net host \
+--cap-drop ALL \
+--cap-add NET_BIND_SERVICE \
+--read-only \
+dubodubonduponey/airplay
+```
+
 
 ## Moar?
 
