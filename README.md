@@ -38,7 +38,7 @@ docker run -d --rm \
     --net host \
     --cap-drop ALL \
     --read-only \
-    dubodubonduponey/airplay
+    ghcr.io/dubo-dubon-duponey/airplay
 ```
 
 ## Notes
@@ -61,7 +61,7 @@ Any additional arguments passed when running the image will get fed to the `shai
 You can get a full list of supported arguments with:
 
 ```bash
-docker run --rm dubodubonduponey/airplay --help
+docker run --rm ghcr.io/dubo-dubon-duponey/airplay --help
 ```
 
 This is specifically convenient for example to address a different Alsa card or mixer (eg: `-- -d hw:1`).
@@ -128,7 +128,7 @@ docker run -d --rm \
 --cap-drop ALL \
 --cap-add NET_BIND_SERVICE \
 --read-only \
-dubodubonduponey/airplay
+ghcr.io/dubo-dubon-duponey/airplay
 ```
 
 
