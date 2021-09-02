@@ -180,7 +180,7 @@ RUN           --mount=type=secret,uid=100,id=CA \
                 libconfig-dev:"$DEB_TARGET_ARCH"=1.5-0.4 \
                 libasound2-dev:"$DEB_TARGET_ARCH"=1.2.4-1.1 \
                 libsoxr-dev:"$DEB_TARGET_ARCH"=0.1.3-4 \
-                libssl-dev:"$DEB_TARGET_ARCH"=1.1.1k-1 \
+                libssl-dev:"$DEB_TARGET_ARCH"=1.1.1k-1+deb11u1 \
                 libcrypto++-dev:"$DEB_TARGET_ARCH"=8.4.0-1
 
 # Bring in runtime dependencies
