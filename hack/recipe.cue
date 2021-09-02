@@ -20,11 +20,8 @@ cakes: {
 				platforms: types.#Platforms | * [
 					types.#Platforms.#AMD64,
 					types.#Platforms.#ARM64,
-					types.#Platforms.#I386,
 					types.#Platforms.#V7,
 					types.#Platforms.#V6,
-					types.#Platforms.#S390X,
-					types.#Platforms.#PPC64LE,
 				]
 			}
 
@@ -45,7 +42,7 @@ cakes: {
 
 injectors: {
 	suite: * "bullseye" | =~ "^(?:jessie|stretch|buster|bullseye|sid)$" @tag(suite, type=string)
-	date: * "2021-08-01" | =~ "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" @tag(date, type=string)
+	date: * "2021-09-01" | =~ "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" @tag(date, type=string)
 	platforms: string @tag(platforms, type=string)
 	registry: * "registry.local" | string @tag(registry, type=string)
 }

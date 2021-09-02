@@ -1,10 +1,10 @@
 ARG           FROM_REGISTRY=ghcr.io/dubo-dubon-duponey
 
-ARG           FROM_IMAGE_FETCHER=base:golang-bullseye-2021-08-01@sha256:820caa12223eb2f1329736bcba8f1ac96a8ab7db37370cbe517dbd1d9f6ca606
-ARG           FROM_IMAGE_BUILDER=base:builder-bullseye-2021-08-01@sha256:f492d8441ddd82cad64889d44fa67cdf3f058ca44ab896de436575045a59604c
-ARG           FROM_IMAGE_TOOLS=tools:linux-bullseye-2021-08-01@sha256:87ec12fe94a58ccc95610ee826f79b6e57bcfd91aaeb4b716b0548ab7b2408a7
-ARG           FROM_IMAGE_AUDITOR=base:auditor-bullseye-2021-08-01@sha256:701da0f301d57910c28dadae2f03ca4d788cadd2ce192b6ec7aae80232081fe9
-ARG           FROM_IMAGE_RUNTIME=base:runtime-bullseye-2021-08-01@sha256:edc80b2c8fd94647f793cbcb7125c87e8db2424f16b9fd0b8e173af850932b48
+ARG           FROM_IMAGE_FETCHER=base:golang-bullseye-2021-09-01@sha256:5f511b94c06380c64a5f67a4a9ea1751d0537a96310a6c6980ef54ed1898702c
+ARG           FROM_IMAGE_BUILDER=base:builder-bullseye-2021-09-01@sha256:12be2a6d0a64b59b1fc44f9b420761ad92efe8188177171163b15148b312481a
+ARG           FROM_IMAGE_AUDITOR=base:auditor-bullseye-2021-09-01@sha256:28d5eddcbbee12bc671733793c8ea8302d7d79eb8ab9ba0581deeacabd307cf5
+ARG           FROM_IMAGE_TOOLS=tools:linux-bullseye-2021-09-01@sha256:e5535efb771ca60d2a371cd2ca2eb1a7d6b7b13cc5c4d27d48613df1a041431d
+ARG           FROM_IMAGE_RUNTIME=base:runtime-bullseye-2021-09-01@sha256:bbd3439247ea1aa91b048e77c8b546369138f910b5083de697f0d36ac21c1a8c
 
 FROM          $FROM_REGISTRY/$FROM_IMAGE_TOOLS                                                                          AS builder-tools
 
@@ -26,6 +26,115 @@ ARG           GIT_VERSION=v3.3.8
 ARG           GIT_COMMIT=f496ca664ef133d428fc80fa3f718244a3916a64
 
 RUN           git clone --recurse-submodules git://"$GIT_REPO" .; git checkout "$GIT_COMMIT"
+
+FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_BUILDER                                              AS fetcher-goplay
+
+ARG           GIT_REPO=github.com/openairplay/goplay2
+ARG           GIT_VERSION=4c938e0
+ARG           GIT_COMMIT=4c938e09111ce7b285595d9f1b5d169b937c1c69
+
+ENV           WITH_BUILD_SOURCE="."
+ENV           WITH_BUILD_OUTPUT="goplay2"
+ENV           CGO_ENABLED=1
+ENV           ENABLE_STATIC=1
+
+RUN           git clone --recurse-submodules git://"$GIT_REPO" .; git checkout "$GIT_COMMIT"
+RUN           --mount=type=secret,id=CA \
+              --mount=type=secret,id=NETRC \
+              [[ "${GOFLAGS:-}" == *-mod=vendor* ]] || go mod download
+
+FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_FETCHER                                              AS fetcher-fdk
+
+ARG           GIT_REPO=github.com/mstorsjo/fdk-aac
+ARG           GIT_VERSION=v2.0.2
+ARG           GIT_COMMIT=801f67f671929311e0c9952c5f92d6e147c7b003
+
+RUN           git clone --recurse-submodules git://"$GIT_REPO" .; git checkout "$GIT_COMMIT"
+
+#######################
+# Building image
+#######################
+FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_BUILDER                                              AS builder-fdk
+
+ARG           TARGETARCH
+ARG           TARGETVARIANT
+
+COPY          --from=fetcher-fdk /source /source
+
+# hadolint ignore=SC2046
+RUN           eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" | sed -e "s/^armv6$/armel/" -e "s/^armv7$/armhf/" -e "s/^ppc64le$/ppc64el/" -e "s/^386$/i386/")")"; \
+              export PKG_CONFIG="${DEB_TARGET_GNU_TYPE}-pkg-config"; \
+              export CC="${DEB_TARGET_GNU_TYPE}-gcc"; \
+              export CXX="${DEB_TARGET_GNU_TYPE}-g++"; \
+              mkdir -p m4; \
+              autoreconf -fi; \
+              ./configure \
+                --prefix=/dist/boot/ \
+                --host="$DEB_TARGET_GNU_TYPE" \
+                --enable-static \
+                --disable-shared; \
+              make; \
+              make install
+
+FROM          --platform=$BUILDPLATFORM fetcher-goplay                                                                  AS builder-goplay
+
+ARG           TARGETOS
+ARG           TARGETARCH
+ARG           TARGETVARIANT
+ENV           GOOS=$TARGETOS
+ENV           GOARCH=$TARGETARCH
+
+ENV           CGO_CFLAGS="${CFLAGS:-} ${ENABLE_PIE:+-fPIE}"
+ENV           GOFLAGS="-trimpath ${ENABLE_PIE:+-buildmode=pie} ${GOFLAGS:-}"
+
+COPY          --from=builder-fdk /dist/boot /dist/boot
+#                libfdk-aac2:"$DEB_TARGET_ARCH"=2.0.1-1 \
+#                libfdk-aac-dev:"$DEB_TARGET_ARCH"=2.0.1-1 \
+
+# Configure
+# XXX this one may be ported in base
+ARG           PKG_CONFIG_PATH="$PKG_CONFIG_PATH":/dist/boot/lib/pkgconfig
+
+# XXX forcing non-free here is kinda lame - prefered option would be to build libfdk-aac from scratch, statically
+# hadolint ignore=DL3009
+RUN           --mount=type=secret,uid=100,id=CA \
+              --mount=type=secret,uid=100,id=CERTIFICATE \
+              --mount=type=secret,uid=100,id=KEY \
+              --mount=type=secret,uid=100,id=GPG.gpg \
+              --mount=type=secret,id=NETRC \
+              --mount=type=secret,id=APT_SOURCES \
+              --mount=type=secret,id=APT_CONFIG \
+              eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" | sed -e "s/^armv6$/armel/" -e "s/^armv7$/armhf/" -e "s/^ppc64le$/ppc64el/" -e "s/^386$/i386/")")"; \
+              sed -Ei 's/main$/main non-free/g' /etc/apt/sources.list; \
+              apt-get update; \
+              apt-get install -qq --no-install-recommends \
+                portaudio19-dev:"$DEB_TARGET_ARCH"=19.6.0-1.1
+
+# Important cases being handled:
+# - cannot compile statically with PIE but on amd64 and arm64
+# - cannot compile fully statically with NETCGO
+RUN           export GOARM="$(printf "%s" "$TARGETVARIANT" | tr -d v)"; \
+              [ "${CGO_ENABLED:-}" != 1 ] || { \
+                eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" | sed -e "s/^armv6$/armel/" -e "s/^armv7$/armhf/" -e "s/^ppc64le$/ppc64el/" -e "s/^386$/i386/")")"; \
+                export PKG_CONFIG="${DEB_TARGET_GNU_TYPE}-pkg-config"; \
+                export AR="${DEB_TARGET_GNU_TYPE}-ar"; \
+                export CC="${DEB_TARGET_GNU_TYPE}-gcc"; \
+                export CXX="${DEB_TARGET_GNU_TYPE}-g++"; \
+                [ ! "${ENABLE_STATIC:-}" ] || { \
+                  [ ! "${WITH_CGO_NET:-}" ] || { \
+                    ENABLE_STATIC=; \
+                    LDFLAGS="${LDFLAGS:-} -static-libgcc -static-libstdc++"; \
+                  }; \
+                  [ "$GOARCH" == "amd64" ] || [ "$GOARCH" == "arm64" ] || [ "${ENABLE_PIE:-}" != true ] || ENABLE_STATIC=; \
+                }; \
+                WITH_LDFLAGS="${WITH_LDFLAGS:-} -linkmode=external -extld="$CC" -extldflags \"${LDFLAGS:-} ${ENABLE_STATIC:+-static}${ENABLE_PIE:+-pie}\""; \
+                WITH_TAGS="${WITH_TAGS:-} cgo ${ENABLE_STATIC:+static static_build}"; \
+              }; \
+              go build -ldflags "-s -w -v ${WITH_LDFLAGS:-}" -tags "${WITH_TAGS:-} net${WITH_CGO_NET:+c}go osusergo" -o /dist/boot/bin/"$WITH_BUILD_OUTPUT" "$WITH_BUILD_SOURCE";
+
+#RUN           eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" | sed -e "s/^armv6$/armel/" -e "s/^armv7$/armhf/" -e "s/^ppc64le$/ppc64el/" -e "s/^386$/i386/")")"; \
+#              mkdir -p /dist/boot/lib; \
+#              cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libfdk-aac.so.2   /dist/boot/lib
 
 #######################
 # Building image
@@ -71,7 +180,7 @@ RUN           --mount=type=secret,uid=100,id=CA \
                 libconfig-dev:"$DEB_TARGET_ARCH"=1.5-0.4 \
                 libasound2-dev:"$DEB_TARGET_ARCH"=1.2.4-1.1 \
                 libsoxr-dev:"$DEB_TARGET_ARCH"=0.1.3-4 \
-                libssl-dev:"$DEB_TARGET_ARCH"=1.1.1k-1 \
+                libssl-dev:"$DEB_TARGET_ARCH"=1.1.1k-1+deb11u1 \
                 libcrypto++-dev:"$DEB_TARGET_ARCH"=8.4.0-1
 
 # Bring in runtime dependencies
@@ -130,31 +239,78 @@ COPY          --from=builder-shairport  /dist/boot            /dist/boot
 COPY          --from=builder-shairport  /usr/share/alsa       /dist/usr/share/alsa
 COPY          --from=builder-tools      /boot/bin/rtsp-health /dist/boot/bin
 
-RUN           chmod 555 /dist/boot/bin/*; \
-              epoch="$(date --date "$BUILD_CREATED" +%s)"; \
-              find /dist/boot -newermt "@$epoch" -exec touch --no-dereference --date="@$epoch" '{}' +;
+COPY          --from=builder-goplay     /dist/boot            /dist/boot
 
+RUN           setcap 'cap_net_bind_service+ep'                /dist/boot/bin/goplay2
+RUN           patchelf --set-rpath '$ORIGIN/../lib'           /dist/boot/bin/shairport-sync
+
+RUN           RUNNING=true \
+              STATIC=true \
+                dubo-check validate /dist/boot/bin/rtsp-health
+
+# XXX exit 1 unfortunately - fix this
+# RUN           RUNNING=true \
+RUN           RO_RELOCATIONS=true \
+              STATIC=true \
+                dubo-check validate /dist/boot/bin/goplay2
+
+# XXX rpath may be borked
+#              RUNNING=true \
+# Hosed as well, libgomp is problematic
+#              NO_SYSTEM_LINK=true \
 RUN           [ "$TARGETARCH" != "amd64" ] || export STACK_CLASH=true; \
               BIND_NOW=true \
               PIE=true \
               FORTIFIED=true \
               STACK_PROTECTED=true \
               RO_RELOCATIONS=true \
-              NO_SYSTEM_LINK=true \
                 dubo-check validate /dist/boot/bin/shairport-sync
 
-RUN           STATIC=true \
-                dubo-check validate /dist/boot/bin/rtsp-health
+RUN           chmod 555 /dist/boot/bin/*; \
+              epoch="$(date --date "$BUILD_CREATED" +%s)"; \
+              find /dist/boot -newermt "@$epoch" -exec touch --no-dereference --date="@$epoch" '{}' +;
 
 #######################
 # Running image
 #######################
 FROM          $FROM_REGISTRY/$FROM_IMAGE_RUNTIME
 
+USER          root
+
+# Install dependencies and tools
+RUN           --mount=type=secret,uid=100,id=CA \
+              --mount=type=secret,uid=100,id=CERTIFICATE \
+              --mount=type=secret,uid=100,id=KEY \
+              --mount=type=secret,uid=100,id=GPG.gpg \
+              --mount=type=secret,id=NETRC \
+              --mount=type=secret,id=APT_SOURCES \
+              --mount=type=secret,id=APT_CONFIG \
+              apt-get update -qq && \
+              apt-get install -qq --no-install-recommends \
+                dbus=1.12.20-2 \
+                pulseaudio=14.2-2 && \
+              apt-get -qq autoremove      && \
+              apt-get -qq clean           && \
+              rm -rf /var/lib/apt/lists/* && \
+              rm -rf /tmp/*               && \
+              rm -rf /var/tmp/*
+
+# Do we even need dbus?
+RUN           dbus-uuidgen --ensure \
+              && mkdir -p /run/dbus \
+              && chown "$BUILD_UID":root /run/dbus \
+              && chmod 775 /run/dbus
+
+RUN           printf "load-module module-alsa-sink device=default\nload-module module-alsa-source device=default\nload-module module-native-protocol-unix\n"  /etc/pulse/default.pa
+
+USER          dubo-dubon-duponey
+
 COPY          --from=assembly --chown=$BUILD_UID:root /dist /
 
 # (alsa|stdout|pipe)
 ENV           OUTPUT=alsa
+# Set this to 2 to use goplay instead of shairport-sync
+ENV           AIRPLAY_VERSION=1
 
 # Name is used as a short description for the service
 ENV           MDNS_NAME="Totales Croquetas"
