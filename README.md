@@ -4,7 +4,7 @@ A Docker image to run an Apple AirPlay Protocol receiver.
 
 This is currently based on [shairport-sync](https://github.com/mikebrady/shairport-sync) and the [ALAC](https://github.com/mikebrady/alac) library.
 
-This image also ships experimental support for Airplay 2 based on [goplay2](https://github.com/openairplay/goplay2).
+This image also ships experimental support for AirPlay2 based on [goplay2](https://github.com/openairplay/goplay2).
 
 ## Image features
 
@@ -131,6 +131,7 @@ docker run -d --rm \
 ghcr.io/dubo-dubon-duponey/airplay
 ```
 
+If you need to use a non-default alsa device, pass the extra DEVICE env variable (example: `--env DEVICE=default:CARD=Qutest`).
 
 ## Moar?
 
