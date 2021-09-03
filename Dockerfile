@@ -307,6 +307,9 @@ USER          dubo-dubon-duponey
 
 COPY          --from=assembly --chown=$BUILD_UID:root /dist /
 
+# Currently used only by pulse, but could/should be generalized?
+# Example for Qutest is default:CARD=Qutest (maybe hw:1,0 would work too)
+ENV           DEVICE=default
 # (alsa|stdout|pipe)
 ENV           OUTPUT=alsa
 # Set this to 2 to use goplay instead of shairport-sync
