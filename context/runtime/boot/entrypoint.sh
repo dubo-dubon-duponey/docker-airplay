@@ -22,7 +22,7 @@ helpers::dbus(){
 if [ "${AIRPLAY_VERSION:-}" == 2 ]; then
   # https://superuser.com/questions/1157370/how-to-configure-pulseaudio-to-input-output-via-alsa
   mkdir -p /tmp/pulse-config/.config/pulse
-  printf "load-module module-suspend-on-idle\nload-module module-alsa-sink device=$DEVICE\nload-module module-alsa-source device=$DEVICE\nload-module module-native-protocol-unix\n" > /tmp/pulse-config/.config/pulse/default.pa
+  printf "load-module module-suspend-on-idle\nload-module module-alsa-sink device=%s\nload-module module-alsa-source device=%s\nload-module module-native-protocol-unix\n" "$DEVICE" "$DEVICE" > /tmp/pulse-config/.config/pulse/default.pa
 
   # Pulse will create the socket in /tmp/pulse/native
   export XDG_RUNTIME_DIR=/tmp/pulse-socket

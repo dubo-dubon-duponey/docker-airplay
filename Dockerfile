@@ -242,6 +242,7 @@ COPY          --from=builder-tools      /boot/bin/rtsp-health /dist/boot/bin
 COPY          --from=builder-goplay     /dist/boot            /dist/boot
 
 RUN           setcap 'cap_net_bind_service+ep'                /dist/boot/bin/goplay2
+# hadolint ignore=SC2016
 RUN           patchelf --set-rpath '$ORIGIN/../lib'           /dist/boot/bin/shairport-sync
 
 RUN           RUNNING=true \
@@ -302,7 +303,7 @@ RUN           dbus-uuidgen --ensure \
               && chmod 775 /run/dbus
 
 # XXX this gets overriden in entrypoint (because of custom device) - remove?
-RUN           printf "load-module module-alsa-sink device=default\nload-module module-alsa-source device=default\nload-module module-native-protocol-unix\n"  /etc/pulse/default.pa
+# RUN           printf "load-module module-alsa-sink device=default\nload-module module-alsa-source device=default\nload-module module-native-protocol-unix\n"  /etc/pulse/default.pa
 
 USER          dubo-dubon-duponey
 
