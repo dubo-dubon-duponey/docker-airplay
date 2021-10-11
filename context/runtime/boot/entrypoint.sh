@@ -7,6 +7,10 @@ set -o errexit -o errtrace -o functrace -o nounset -o pipefail
   exit 1
 }
 
+mkdir -p "$XDG_RUNTIME_DIR"
+mkdir -p "$XDG_STATE_HOME"
+mkdir -p "$XDG_CACHE_HOME"
+
 helpers::dbus(){
   # On container restart, cleanup the crap
   rm -f /run/dbus/pid
@@ -29,7 +33,7 @@ if [ "${AIRPLAY_VERSION:-}" == 2 ]; then
   mkdir -p "$XDG_RUNTIME_DIR"
   mkdir -p /tmp/pulse-config
   helpers::dbus
-  HOME=/tmp/pulse-config pulseaudio --start > /dev/stdout 2>&1
+  HOME=/tmp/pulse-config XDG_CONFIG_HOME=/tmp/pulse-config pulseaudio --start > /dev/stdout 2>&1
   # LANG=C pulseaudio -vvvv --log-time=1 > ~/pulseverbose.log 2>&1
   # XXX
   sleep 5
