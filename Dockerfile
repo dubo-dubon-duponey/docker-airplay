@@ -302,9 +302,6 @@ RUN           dbus-uuidgen --ensure \
               && chown "$BUILD_UID":root /run/dbus \
               && chmod 775 /run/dbus
 
-# XXX this gets overriden in entrypoint (because of custom device) - remove?
-# RUN           printf "load-module module-alsa-sink device=default\nload-module module-alsa-source device=default\nload-module module-native-protocol-unix\n"  /etc/pulse/default.pa
-
 USER          dubo-dubon-duponey
 
 COPY          --from=assembly --chown=$BUILD_UID:root /dist /
