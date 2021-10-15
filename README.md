@@ -47,14 +47,19 @@ docker run -d --rm \
 
 You need to run this in `host` or `mac(or ip)vlan` networking (because of mDNS).
 
+Alternatively, you could broadcast mDNS announce in a sidecar (using goello for example),
+but you are on your own on this.
+
 ### Additional arguments
 
 The following environment variables allow for high-level control over shairport:
 
-* OUTPUT (alsa|pipe|stdout) controls the output
-* LOG_LEVEL if set to "debug" will pass along -vvv and --statistics
 * MDNS_NAME controls the announced name
-* PORT controls the port to bind to
+* OUTPUT (alsa|pipe|stdout) controls the output
+* DEVICE (example: default:CARD=Mojo) controls the output device (default to "default")
+* LOG_LEVEL if set to "debug" will pass along -vvv and --statistics to shairport
+* PORT controls the port to bind to (defaults to 5000)
+* _EXPERIMENTAL_AIRPLAY_VERSION if set to 2 will use goplay instead of shairport (this is widely experimental and not guaranteed to do anything useful)
 
 Any additional arguments passed when running the image will get fed to the `shairport-sync` binary directly.
 
@@ -64,7 +69,7 @@ You can get a full list of supported arguments with:
 docker run --rm ghcr.io/dubo-dubon-duponey/airplay --help
 ```
 
-This is specifically convenient for example to address a different Alsa card or mixer (eg: `-- -d hw:1`).
+This is specifically convenient for example to address a different mixer.
 
 ### Custom configuration file
 
@@ -105,12 +110,12 @@ requires you to setup dbus and an avahi daemon process on top of shairport, so, 
 shairport-sync does not support it right now, and it appears unlikely to be implemented for the time being.
 See https://github.com/mikebrady/shairport-sync/issues/535 for details.
 
-If you set AIRPLAY_VERSION=2, goplay2 is used instead of shairport-sync.
+If you set _EXPERIMENTAL_AIRPLAY_VERSION=2, goplay2 is used instead of shairport-sync.
 
 Caveats:
 * this is largely experimental at this point, and probably buggy
 * goplay2 ignores the following: OUTPUT and PORT
-* goplay2 does require NET_BIND_SERVICE to work properly
+* goplay2 does require capability NET_BIND_SERVICE to work properly
 * goplay2 requires pulseaudio to be installed in the runtime image
 * goplay2 is not compiled the way it should, and has a number of issues:
   * it will create its configuration and write data under the current working directory
@@ -120,6 +125,7 @@ To start goplay2:
 
 ```bash
 docker run -d --rm \
+--env _EXPERIMENTAL_AIRPLAY_VERSION=2 \
 --name "airplay2" \
 --env MDNS_NAME="My Fancy Airplay 2 Receiver" \
 --group-add audio \

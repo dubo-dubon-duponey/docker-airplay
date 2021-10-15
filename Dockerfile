@@ -306,16 +306,16 @@ USER          dubo-dubon-duponey
 
 COPY          --from=assembly --chown=$BUILD_UID:root /dist /
 
-# Currently used only by pulse, but could/should be generalized?
-# Example for Qutest is default:CARD=Qutest (maybe hw:1,0 would work too)
-ENV           DEVICE=default
+# Name is used as a short description for the service
+ENV           MDNS_NAME="Totales Croquetas"
+
+# Will default to "default"
+ENV           DEVICE=""
 # (alsa|stdout|pipe)
 ENV           OUTPUT=alsa
 # Set this to 2 to use goplay instead of shairport-sync
-ENV           AIRPLAY_VERSION=1
+ENV           _EXPERIMENTAL_AIRPLAY_VERSION=1
 
-# Name is used as a short description for the service
-ENV           MDNS_NAME="Totales Croquetas"
 ENV           LOG_LEVEL=warn
 ENV           PORT=5000
 
@@ -326,4 +326,4 @@ EXPOSE        6001-6011/udp
 
 VOLUME        /tmp
 
-HEALTHCHECK --interval=120s --timeout=30s --start-period=10s --retries=1 CMD rtsp-health || exit 1
+HEALTHCHECK   --interval=120s --timeout=30s --start-period=10s --retries=1 CMD rtsp-health || exit 1
