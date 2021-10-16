@@ -10,7 +10,7 @@ helpers::dir::writable "/tmp"
 
 # Traditional, shairport-sync airplay goes here
 if [ "${_EXPERIMENTAL_AIRPLAY_VERSION:-}" != 2 ]; then
-  args=(--port "$PORT" --output "$OUTPUT" --name "$MDNS_NAME" --use-stderr --mdns tinysvcmdns --configfile /config/shairport-sync/main.conf)
+  args=(--port "${PORT:-5000}" --output "$OUTPUT" --name "$MDNS_NAME" --use-stderr --mdns tinysvcmdns --configfile /config/shairport-sync/main.conf)
 
   [ "$(printf "%s" "$LOG_LEVEL" | tr '[:upper:]' '[:lower:]')" != "debug" ] || args+=(-vvv --statistics)
   args+=("$@")
