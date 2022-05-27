@@ -12,7 +12,6 @@ This image also ships experimental support for AirPlay2 based on [goplay2](https
   * [x] linux/amd64
   * [x] linux/arm64
   * [x] linux/arm/v7
-  * [x] linux/arm/v6
 * hardened:
   * [x] image runs read-only
   * [x] image runs with no cap
@@ -25,7 +24,7 @@ This image also ships experimental support for AirPlay2 based on [goplay2](https
 * observable
   * [x] healthcheck
   * [x] logs to stdout
-* other achitectures (386, ppc64le, s390x) probably build as well, though they are disabled by default
+* other achitectures (arm/v6, 386, ppc64le, s390x) probably build as well, though they are disabled by default
 
 ## Run
 
@@ -45,10 +44,8 @@ docker run -d --rm \
 
 ### Networking
 
-You need to run this in `host` or `mac(or ip)vlan` networking (because of mDNS).
-
-Alternatively, you could broadcast mDNS announce in a sidecar (using goello for example),
-but you are on your own on this.
+You need to run this in `host` or `mac(or ip)vlan` networking (because of mDNS), or alternatively
+handle mDNS announce out of band.
 
 ### Additional arguments
 
@@ -56,14 +53,16 @@ The following environment variables allow for high-level control over shairport:
 
 * MDNS_NAME controls the announced name
 * OUTPUT (alsa|pipe|stdout) controls the output
-* DEVICE (example: default:CARD=Mojo) controls the output device (default to "default")
-* LOG_LEVEL if set to "debug" will pass along -vvv and --statistics to shairport
+* DEVICE (example: `default:CARD=Mojo`) controls the output device (default to "default")
+* LOG_LEVEL if set to "debug" will pass along `-vvv` and `--statistics` to shairport (noisy!)
 * PORT controls the port to bind to (defaults to 5000)
+<!--
 * _EXPERIMENTAL_AIRPLAY_VERSION if set to 2 will use goplay instead of shairport (this is widely experimental and not guaranteed to do anything useful)
+-->
 
 Any additional arguments passed when running the image will get fed to the `shairport-sync` binary directly.
 
-You can get a full list of supported arguments with:
+You can get a full list of shairport supported arguments with:
 
 ```bash
 docker run --rm ghcr.io/dubo-dubon-duponey/airplay --help
@@ -73,7 +72,7 @@ This is specifically convenient for example to address a different mixer.
 
 ### Custom configuration file
 
-For more advanced control over shairport-sync configuration, mount `/config/shairport-sync/main.conf`.
+For more advanced control over `shairport-sync` configuration, mount `/config/shairport-sync/main.conf`.
 
 ### Linkage
 
@@ -94,10 +93,10 @@ Also, libalac is built in statically.
 ### About soxr
 
 Soxr support is compiled in, though in our experience we had bad results on RPI using it, hence
-we advise against using it on low-end hardware and do rely on "basic" instead by default.
+we advise against using it on low-end hardware.
 
 If you want to use soxr, just pass it as an extra argument ("--stuffing=soxr") or change the config file
-corresponding setting.
+ setting.
 
 ### About mDNS
 
@@ -105,11 +104,14 @@ We do not support Avahi, and instead rely on tinymdns.
 Setting-up avahi in a container is doable (and we did before in this image), but it's a PITA and
 requires you to setup dbus and an avahi daemon process on top of shairport, so, no thank you.
 
-### Experimental Airplay 2 support
+### Airplay 2 support
 
 shairport-sync does not support it right now, and it appears unlikely to be implemented for the time being.
 See https://github.com/mikebrady/shairport-sync/issues/535 for details.
 
+<!> Recent support has been added to the development branch, though it's highly experimental right now and not part of this image <!>
+
+<!--
 If you set _EXPERIMENTAL_AIRPLAY_VERSION=2, goplay2 is used instead of shairport-sync.
 
 Caveats:
@@ -138,6 +140,7 @@ ghcr.io/dubo-dubon-duponey/airplay
 ```
 
 If you need to use a non-default alsa device, pass the extra DEVICE env variable (example: `--env DEVICE=default:CARD=Qutest`).
+-->
 
 ## Moar?
 
