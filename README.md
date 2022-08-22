@@ -37,7 +37,7 @@ docker run -d --rm \
     --net host \
     --cap-drop ALL \
     --read-only \
-    ghcr.io/dubo-dubon-duponey/airplay
+    index.docker.io/dubodubonduponey/airplay
 ```
 
 ## Notes
@@ -65,7 +65,7 @@ Any additional arguments passed when running the image will get fed to the `shai
 You can get a full list of shairport supported arguments with:
 
 ```bash
-docker run --rm ghcr.io/dubo-dubon-duponey/airplay --help
+docker run --rm index.docker.io/dubodubonduponey/airplay --help
 ```
 
 This is specifically convenient for example to address a different mixer.
@@ -136,7 +136,7 @@ docker run -d --rm \
 --cap-drop ALL \
 --cap-add NET_BIND_SERVICE \
 --read-only \
-ghcr.io/dubo-dubon-duponey/airplay
+index.docker.io/dubodubonduponey/airplay
 ```
 
 If you need to use a non-default alsa device, pass the extra DEVICE env variable (example: `--env DEVICE=default:CARD=Qutest`).
