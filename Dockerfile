@@ -1,10 +1,10 @@
-ARG           FROM_REGISTRY=ghcr.io/dubo-dubon-duponey
+ARG           FROM_REGISTRY=index.docker.io/dubodubonduponey
 
-ARG           FROM_IMAGE_FETCHER=base:golang-bullseye-2022-05-01@sha256:fb6b23026cef3c4c6c609c267a4595647ecc58d25a8d972d90145832fe7f4381
-ARG           FROM_IMAGE_BUILDER=base:builder-bullseye-2022-05-01@sha256:b97738238e9d1423b6de8d5a96f4310ae7039ffa4af19cd6a85f5f70d0faef99
-ARG           FROM_IMAGE_AUDITOR=base:auditor-bullseye-2022-05-01@sha256:984cf8672b483ca94333b5b37e19a95b115047dee05955767ed5b1bac1140e0c
-ARG           FROM_IMAGE_TOOLS=tools:linux-bullseye-2022-05-01@sha256:6268013e3bd16eaaf7dd15c7689f8740bd00af1149c92795cc42fab4f3c6d07a
-ARG           FROM_IMAGE_RUNTIME=base:runtime-bullseye-2022-05-01@sha256:5e44963d961cf7594cf8a0d1bba98fd5da69d7881cb77c142a43ceab230e87df
+ARG           FROM_IMAGE_FETCHER=base:golang-bullseye-2022-08-01
+ARG           FROM_IMAGE_BUILDER=base:builder-bullseye-2022-08-01
+ARG           FROM_IMAGE_AUDITOR=base:auditor-bullseye-2022-08-01
+ARG           FROM_IMAGE_TOOLS=tools:linux-bullseye-2022-08-01
+ARG           FROM_IMAGE_RUNTIME=base:runtime-bullseye-2022-08-01
 
 FROM          $FROM_REGISTRY/$FROM_IMAGE_TOOLS                                                                          AS builder-tools
 
@@ -177,7 +177,7 @@ RUN           --mount=type=secret,uid=100,id=CA \
                 libconfig-dev:"$DEB_TARGET_ARCH"=1.5-0.4 \
                 libasound2-dev:"$DEB_TARGET_ARCH"=1.2.4-1.1 \
                 libsoxr-dev:"$DEB_TARGET_ARCH"=0.1.3-4 \
-                libssl-dev:"$DEB_TARGET_ARCH"=1.1.1n-0+deb11u1 \
+                libssl-dev:"$DEB_TARGET_ARCH"=1.1.1n-0+deb11u3 \
                 libcrypto++-dev:"$DEB_TARGET_ARCH"=8.4.0-1
 
 # Bring in runtime dependencies
