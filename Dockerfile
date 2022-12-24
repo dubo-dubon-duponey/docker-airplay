@@ -1,10 +1,10 @@
-ARG           FROM_REGISTRY=index.docker.io/dubodubonduponey
+ARG           FROM_REGISTRY=docker.io/dubodubonduponey
 
-ARG           FROM_IMAGE_FETCHER=base:golang-bullseye-2022-08-01
-ARG           FROM_IMAGE_BUILDER=base:builder-bullseye-2022-08-01
-ARG           FROM_IMAGE_AUDITOR=base:auditor-bullseye-2022-08-01
-ARG           FROM_IMAGE_TOOLS=tools:linux-bullseye-2022-08-01
-ARG           FROM_IMAGE_RUNTIME=base:runtime-bullseye-2022-08-01
+ARG           FROM_IMAGE_FETCHER=base:golang-bullseye-2022-12-01
+ARG           FROM_IMAGE_BUILDER=base:builder-bullseye-2022-12-01
+ARG           FROM_IMAGE_AUDITOR=base:auditor-bullseye-2022-12-01
+ARG           FROM_IMAGE_TOOLS=tools:linux-bullseye-2022-12-01
+ARG           FROM_IMAGE_RUNTIME=base:runtime-bullseye-2022-12-01
 
 FROM          $FROM_REGISTRY/$FROM_IMAGE_TOOLS                                                                          AS builder-tools
 
@@ -14,16 +14,16 @@ FROM          $FROM_REGISTRY/$FROM_IMAGE_TOOLS                                  
 FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_FETCHER                                              AS fetcher-alac
 
 ARG           GIT_REPO=github.com/mikebrady/alac
-ARG           GIT_VERSION=5d6d836
-ARG           GIT_COMMIT=5d6d836ee5b025a5e538cfa62c88bc5bced506ed
+ARG           GIT_VERSION=96dd59d
+ARG           GIT_COMMIT=96dd59d17b776a7dc94ed9b2c2b4a37177feb3c4
 
 RUN           git clone --recurse-submodules https://"$GIT_REPO" .; git checkout "$GIT_COMMIT"
 
 FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_FETCHER                                              AS fetcher-shairport
 
 ARG           GIT_REPO=github.com/mikebrady/shairport-sync
-ARG           GIT_VERSION=v3.3.8
-ARG           GIT_COMMIT=f496ca664ef133d428fc80fa3f718244a3916a64
+ARG           GIT_VERSION=v4.1.1
+ARG           GIT_COMMIT=a732f5d3060121601ef0814815b5bb4d07925965
 
 RUN           git clone --recurse-submodules https://"$GIT_REPO" .; git checkout "$GIT_COMMIT"
 
@@ -285,7 +285,7 @@ RUN           --mount=type=secret,uid=100,id=CA \
               --mount=type=secret,id=APT_CONFIG \
               apt-get update -qq && \
               apt-get install -qq --no-install-recommends \
-                dbus=1.12.20-2 \
+                dbus=1.12.24-0+deb11u1 \
                 pulseaudio=14.2-2 && \
               apt-get -qq autoremove      && \
               apt-get -qq clean           && \
