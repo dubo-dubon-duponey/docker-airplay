@@ -1,10 +1,16 @@
 # What
 
-A Docker image to run an Apple AirPlay Protocol receiver.
+A Docker image to run an AirPlay 2 receiver.
 
-This is currently based on [shairport-sync](https://github.com/mikebrady/shairport-sync) and the [ALAC](https://github.com/mikebrady/alac) library.
+This is based on [shairport-sync](https://github.com/mikebrady/shairport-sync), [nqptp](https://github.com/mikebrady/nqptp) and the [ALAC](https://github.com/mikebrady/alac) library.
 
-This image also ships experimental support for AirPlay2 based on [goplay2](https://github.com/openairplay/goplay2).
+NOTE: the awesome mikebrady has an *official* shairport-sync [on Docker Hub](https://hub.docker.com/r/mikebrady/shairport-sync).
+You should *really* try it *first* and make it work, and only come back here if you have *good* reasons to do so.
+
+These reasons could be that you are interested in:
+* tighter container security (no root, limited caps, hardened)
+* opinions (alsa only, Debian)
+* more opinions
 
 ## Image features
 
@@ -14,13 +20,13 @@ This image also ships experimental support for AirPlay2 based on [goplay2](https
   * [x] linux/arm/v7
 * hardened:
   * [x] image runs read-only
-  * [x] image runs with no cap
+  * [x] image runs with only NET_BIND_SERVICE, necessary for nqptp to bind on privileged ports
   * [x] process runs as a non-root user, disabled login, no shell
   * [x] shairport-sync is compiled with PIE, bind now, stack protection, fortify source and read-only relocations (additionally stack clash protection on amd64)
 * lightweight
   * [x] based on our slim [Debian Bullseye](https://github.com/dubo-dubon-duponey/docker-debian)
   * [x] simple entrypoint script
-  * [x] multi-stage build with no installed dependencies for the runtime image
+  * [ ] multi-stage build with minimal runtime dependencies (libavcodec, avahi-daemon, dbus) 
 * observable
   * [x] healthcheck
   * [x] logs to stdout
@@ -36,6 +42,7 @@ docker run -d --rm \
     --device /dev/snd \
     --net host \
     --cap-drop ALL \
+    --cap-add NET_BIND_SERVICE \
     --read-only \
     docker.io/dubodubonduponey/airplay
 ```
@@ -44,8 +51,7 @@ docker run -d --rm \
 
 ### Networking
 
-You need to run this in `host` or `mac(or ip)vlan` networking (because of mDNS), or alternatively
-handle mDNS announce out of band.
+You need to run this with `--net host` or alternatively use mac(or ip)vlan networking (because of mDNS).
 
 ### Additional arguments
 
@@ -55,10 +61,7 @@ The following environment variables allow for high-level control over shairport:
 * OUTPUT (alsa|pipe|stdout) controls the output
 * DEVICE (example: `default:CARD=Mojo`) controls the output device (default to "default")
 * LOG_LEVEL if set to "debug" will pass along `-vvv` and `--statistics` to shairport (noisy!)
-* PORT controls the port to bind to (defaults to 5000)
-<!--
-* _EXPERIMENTAL_AIRPLAY_VERSION if set to 2 will use goplay instead of shairport (this is widely experimental and not guaranteed to do anything useful)
--->
+* PORT controls the port to bind to (defaults to 7000)
 
 Any additional arguments passed when running the image will get fed to the `shairport-sync` binary directly.
 
@@ -68,79 +71,28 @@ You can get a full list of shairport supported arguments with:
 docker run --rm docker.io/dubodubonduponey/airplay --help
 ```
 
-This is specifically convenient for example to address a different mixer.
+This is specifically convenient to address a different mixer.
 
 ### Custom configuration file
 
 For more advanced control over `shairport-sync` configuration, mount `/config/shairport-sync/main.conf`.
 
-### Linkage
-
-The shairport binary links dynamically against:
-* libasound2
-* libsoxr0
-* libconfig9
-* libpopt0
-* libssl1.1
-* libgomp.so.1
-* libstdc++.so.6
-* libcrypto.so.1.1
-
-These are copied over from the build stage into the final image in /boot/lib.
-
-Also, libalac is built in statically.
-
 ### About soxr
 
-Soxr support is compiled in, though in our experience we had bad results on RPI using it, hence
-we advise against using it on low-end hardware.
-
-If you want to use soxr, just pass it as an extra argument ("--stuffing=soxr") or change the config file
- setting.
+In our experience, soxr yields bad results on RPI 3b.
+We advise against using it on low-end hardware.
 
 ### About mDNS
 
-We do not support Avahi, and instead rely on tinymdns.
-Setting-up avahi in a container is doable (and we did before in this image), but it's a PITA and
-requires you to setup dbus and an avahi daemon process on top of shairport, so, no thank you.
+This image had been using tinymdns for a long time.
+Unfortunately, tiny is abandoned and shairport-sync does not support airplay2 with it.
 
-### Airplay 2 support
+Therefore, we switched back to avahi/dbus, hopefully run with a non-root user and no cap.
 
-shairport-sync does not support it right now, and it appears unlikely to be implemented for the time being.
-See https://github.com/mikebrady/shairport-sync/issues/535 for details.
+### About other options
 
-<!> Recent support has been added to the development branch, though it's highly experimental right now and not part of this image <!>
-
-<!--
-If you set _EXPERIMENTAL_AIRPLAY_VERSION=2, goplay2 is used instead of shairport-sync.
-
-Caveats:
-* this is largely experimental at this point, and probably buggy
-* goplay2 ignores the following: OUTPUT and PORT
-* goplay2 does require capability NET_BIND_SERVICE to work properly
-* goplay2 requires pulseaudio to be installed in the runtime image
-* goplay2 is not compiled the way it should, and has a number of issues:
-  * it will create its configuration and write data under the current working directory
-  * config and data are mixed in the same location
-
-To start goplay2:
-
-```bash
-docker run -d --rm \
---env _EXPERIMENTAL_AIRPLAY_VERSION=2 \
---name "airplay2" \
---env MDNS_NAME="My Fancy Airplay 2 Receiver" \
---group-add audio \
---device /dev/snd \
---net host \
---cap-drop ALL \
---cap-add NET_BIND_SERVICE \
---read-only \
-docker.io/dubodubonduponey/airplay
-```
-
-If you need to use a non-default alsa device, pass the extra DEVICE env variable (example: `--env DEVICE=default:CARD=Qutest`).
--->
+We compile only for alsa, and disabled a number of optional features.
+See the Dockerfile for details.
 
 ## Moar?
 
