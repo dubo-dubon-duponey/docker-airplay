@@ -98,7 +98,7 @@ RUN           --mount=type=secret,uid=100,id=CA \
                 libavcodec-dev:"$DEB_TARGET_ARCH" \
                 libavformat-dev:"$DEB_TARGET_ARCH" \
                 uuid-dev:"$DEB_TARGET_ARCH" \
-                libgcrypt-dev:"$DEB_TARGET_ARCH" \
+                libgcrypt20-dev:"$DEB_TARGET_ARCH" \
                 libsodium-dev:"$DEB_TARGET_ARCH" \
                 libplist-dev:"$DEB_TARGET_ARCH" \
                 libmosquitto-dev:"$DEB_TARGET_ARCH" \
@@ -265,9 +265,9 @@ RUN           --mount=type=secret,uid=100,id=CA \
               --mount=type=secret,id=APT_CONFIG \
               apt-get update -qq \
               && apt-get install -qq --no-install-recommends \
-                libavutil56 \
-                libavcodec58 \
-                libavformat58 \
+                libavutil57 \
+                libavcodec59 \
+                libavformat59 \
                 avahi-daemon \
               && apt-get -qq autoremove       \
               && apt-get -qq clean            \
