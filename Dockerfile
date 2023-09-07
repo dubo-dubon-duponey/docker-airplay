@@ -1,10 +1,10 @@
 ARG           FROM_REGISTRY=docker.io/dubodubonduponey
 
-ARG           FROM_IMAGE_FETCHER=base:golang-bullseye-2022-12-01
-ARG           FROM_IMAGE_BUILDER=base:builder-bullseye-2022-12-01
-ARG           FROM_IMAGE_AUDITOR=base:auditor-bullseye-2022-12-01
-ARG           FROM_IMAGE_TOOLS=tools:linux-bullseye-2022-12-01
-ARG           FROM_IMAGE_RUNTIME=base:runtime-bullseye-2022-12-01
+ARG           FROM_IMAGE_FETCHER=base:golang-bookworm-2023-09-01
+ARG           FROM_IMAGE_BUILDER=base:builder-bookworm-2023-09-01
+ARG           FROM_IMAGE_AUDITOR=base:auditor-bookworm-2023-09-01
+ARG           FROM_IMAGE_TOOLS=tools:linux-bookworm-2023-09-01
+ARG           FROM_IMAGE_RUNTIME=base:runtime-bookworm-2023-09-01
 
 FROM          $FROM_REGISTRY/$FROM_IMAGE_TOOLS                                                                          AS builder-tools
 
@@ -22,16 +22,16 @@ RUN           git clone --recurse-submodules https://"$GIT_REPO" .; git checkout
 FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_FETCHER                                              AS fetcher-nqptp
 
 ARG           GIT_REPO=github.com/mikebrady/nqptp
-ARG           GIT_VERSION=ad384f9
-ARG           GIT_COMMIT=ad384f9ed3b2cc31e97012ab6bfe5a214ffc65a2
+ARG           GIT_VERSION=b247899
+ARG           GIT_COMMIT=b24789982d5cc067ecf6e8f3352b701d177530ec
 
 RUN           git clone --recurse-submodules https://"$GIT_REPO" .; git checkout "$GIT_COMMIT"
 
 FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_FETCHER                                              AS fetcher-shairport
 
 ARG           GIT_REPO=github.com/mikebrady/shairport-sync
-ARG           GIT_VERSION=v4.1.1
-ARG           GIT_COMMIT=a732f5d3060121601ef0814815b5bb4d07925965
+ARG           GIT_VERSION=v4.2.0
+ARG           GIT_COMMIT=b56d55151890ff846a667b50d15e9e6b562144d2
 
 RUN           git clone --recurse-submodules https://"$GIT_REPO" .; git checkout "$GIT_COMMIT"
 
@@ -102,18 +102,18 @@ RUN           --mount=type=secret,uid=100,id=CA \
                 libsodium-dev:"$DEB_TARGET_ARCH" \
                 libplist-dev:"$DEB_TARGET_ARCH" \
                 libmosquitto-dev:"$DEB_TARGET_ARCH" \
-                libasound2-dev:"$DEB_TARGET_ARCH"=1.2.4-1.1 \
+                libasound2-dev:"$DEB_TARGET_ARCH"=1.2.8-1+b1 \
                 libconfig-dev:"$DEB_TARGET_ARCH"=1.5-0.4 \
-                libpopt-dev:"$DEB_TARGET_ARCH"=1.18-2 \
+                libpopt-dev:"$DEB_TARGET_ARCH"=1.19+dfsg-1 \
                 xxd:"$DEB_TARGET_ARCH"; \
               apt-get install -qq --no-install-recommends \
                 libmbedtls-dev:"$DEB_TARGET_ARCH" \
                 libsoxr-dev:"$DEB_TARGET_ARCH"=0.1.3-4 \
                 libsndfile1-dev:"$DEB_TARGET_ARCH"; \
               apt-get install -qq --no-install-recommends \
-                libssl-dev:"$DEB_TARGET_ARCH"=1.1.1n-0+deb11u3 \
-                libavahi-client-dev:"$DEB_TARGET_ARCH"=0.8-5+deb11u1 \
-                avahi-daemon:"$DEB_TARGET_ARCH"
+                libssl-dev:"$DEB_TARGET_ARCH"=3.0.9-1 \
+                libavahi-client-dev:"$DEB_TARGET_ARCH"=0.8-10 \
+                avahi-daemon:"$DEB_TARGET_ARCH":0.8-10
 
 # Bring in runtime dependencies
 # avutil would be dragging in: libavutil56 libbsd0 libdrm-common libdrm2 libmd0 libva-drm2 libva-x11-2 libva2 libvdpau1 libx11-6 libx11-data libxau6 libxcb1 libxdmcp6 libxext6 libxfixes3 ocl-icd-libopencl1
