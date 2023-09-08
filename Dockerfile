@@ -113,7 +113,7 @@ RUN           --mount=type=secret,uid=100,id=CA \
               apt-get install -qq --no-install-recommends \
                 libssl-dev:"$DEB_TARGET_ARCH"=3.0.9-1 \
                 libavahi-client-dev:"$DEB_TARGET_ARCH"=0.8-10 \
-                avahi-daemon:"$DEB_TARGET_ARCH":0.8-10
+                avahi-daemon:"$DEB_TARGET_ARCH"=0.8-10
 
 # Bring in runtime dependencies
 # avutil would be dragging in: libavutil56 libbsd0 libdrm-common libdrm2 libmd0 libva-drm2 libva-x11-2 libva2 libvdpau1 libx11-6 libx11-data libxau6 libxcb1 libxdmcp6 libxext6 libxfixes3 ocl-icd-libopencl1
