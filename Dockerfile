@@ -124,11 +124,11 @@ RUN           eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" |
               cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libplist-2.0.so.3   /dist/boot/lib; \
               cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libmosquitto.so.1   /dist/boot/lib; \
               cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libasound.so.2      /dist/boot/lib; \
-              cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libcrypto.so.1.1    /dist/boot/lib; \
+              cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libcrypto.so.3      /dist/boot/lib; \
               cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libconfig.so.9      /dist/boot/lib; \
               cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libpopt.so.0        /dist/boot/lib; \
               cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libuuid.so.1        /dist/boot/lib; \
-              cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libmbedcrypto.so.3  /dist/boot/lib; \
+              cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libmbedcrypto.so.7  /dist/boot/lib; \
               cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libsoxr.so.0        /dist/boot/lib; \
               cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libsndfile.so.1     /dist/boot/lib; \
               cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libavahi-client.so.3 /dist/boot/lib
@@ -204,11 +204,11 @@ RUN           rm /dist/boot/lib/libalac.la
 RUN           rm /dist/boot/lib/libuuid.so.1
 RUN           rm /dist/boot/lib/libsodium.so.23
 RUN           rm /dist/boot/lib/libgcrypt.so.20
-RUN           rm /dist/boot/lib/libcrypto.so.1.1
+RUN           rm /dist/boot/lib/libcrypto.so.3
 RUN           rm /dist/boot/lib/libsoxr.so.0
 
 # Not usable right now
-RUN           rm /dist/boot/lib/libmbedcrypto.so.3
+RUN           rm /dist/boot/lib/libmbedcrypto.so.7
 
 RUN           rm -Rf /dist/boot/include
 RUN           rm -Rf /dist/boot/share
