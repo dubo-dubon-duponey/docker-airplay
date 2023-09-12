@@ -280,19 +280,19 @@ RUN           mkdir -p /run/avahi-daemon; chown avahi:avahi /run/avahi-daemon; c
 USER          dubo-dubon-duponey
 
 # Name is used as a short description for the service
-ENV           MDNS_NAME="Speakeasy"
+ENV           MOD_MDNS_NAME="Speakeasy"
+
 ENV           LOG_LEVEL="warn"
-ENV           PORT=7000
 
 # Will default to "default"
 ENV           DEVICE=""
 # (alsa|stdout|pipe)
 ENV           OUTPUT=alsa
 
-ENV           HEALTHCHECK_URL=rtsp://127.0.0.1:$PORT
+ENV           ADVANCED_AIRPLAY_PORT=7000
+ENV           HEALTHCHECK_URL=rtsp://127.0.0.1:$ADVANCED_AIRPLAY_PORT
 
-# shairport-sync port
-EXPOSE        $PORT/tcp
+EXPOSE        $ADVANCED_AIRPLAY_PORT/tcp
 # nqptp ports
 EXPOSE        319
 EXPOSE        320
