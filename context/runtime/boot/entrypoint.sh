@@ -5,20 +5,21 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]:-$PWD}")" 2>/dev/null 1>&2 && pwd)"
 readonly root
 # shellcheck source=/dev/null
 source "$root/helpers.sh"
+source "$root/mdns.sh"
 
 helpers::dir::writable "/tmp"
 
-helpers::dbus
-helpers::avahi
+mdns::start::dbus
+mdns::start::avahi true
 
 nqptp &
 
 # https://github.com/mikebrady/shairport-sync/blob/master/scripts/shairport-sync.conf
 args=(\
-  --name "$MDNS_NAME" \
+  --name "$MOD_MDNS_NAME" \
   --output "$OUTPUT" \
   --mdns avahi \
-  --port "${PORT:-7000}" \
+  --port "${ADVANCED_AIRPLAY_PORT:-7000}" \
   --configfile /config/shairport-sync/main.conf \
 )
 
