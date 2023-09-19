@@ -51,7 +51,9 @@ mdns::start::avahi(){
   # - project is half-dead: https://github.com/lathiat/avahi/issues/388
 
   local args=()
-  local avahisocket="$XDG_STATE_HOME/avahi-daemon/socket"
+  # local avahisocket="$XDG_STATE_HOME/avahi-daemon/socket"
+  # XXX giving up on trying to be fancy with avahi
+  local avahisocket="/run/avahi-daemon/socket"
 
   # Make sure we can write it
   helpers::dir::writable "$(dirname "$avahisocket")" true
