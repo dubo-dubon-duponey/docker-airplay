@@ -54,7 +54,7 @@ mdns::start::avahi(){
   local avahisocket="$XDG_STATE_HOME/avahi-daemon/socket"
 
   # Make sure we can write it
-  helpers::dir::writable "$(dirname "$avahisocket")"
+  helpers::dir::writable "$(dirname "$avahisocket")" true
 
   # Cleanup leftovers on container restart
   rm -f "$(dirname "$avahisocket")/pid"
