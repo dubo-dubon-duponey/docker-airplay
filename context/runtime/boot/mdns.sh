@@ -9,7 +9,7 @@ mdns::records::add(){
   local host="$2"
   local name="${3:-$host}"
   local port="${4:-9}"
-  local text="${5:-[]}"
+  local text="${5:-[\"\"]}" # XXX Goello bug - if [] the announce if not visible
   _internal_mod_mdns_records+=("$(printf '{"Type": "%s", "Host": "%s", "Name": "%s", "Port": %s, "Text": %s}' "$type" "$host" "$name" "$port" "$text")")
 }
 
@@ -64,7 +64,7 @@ mdns::start::avahi(){
   [ "$(printf "%s" "$LOG_LEVEL" | tr '[:upper:]' '[:lower:]')" != "debug" ] || args+=(--debug)
 
   # -D/--daemonize implies -s/--syslog that we do not want, so, just background it
-  avahi-daemon -f /config/avahi/main.conf --no-drop-root --no-chroot "${args[@]}" &
+  avahi-daemon -f /config/avahi/main.conf --no-drop-root --no-chroot "${args[@]}"
 
   local tries=1
   # Wait until the socket is there

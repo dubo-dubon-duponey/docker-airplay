@@ -10,7 +10,7 @@ source "$root/mdns.sh"
 helpers::dir::writable "/tmp"
 
 mdns::start::dbus
-mdns::start::avahi true
+mdns::start::avahi &
 
 nqptp &
 

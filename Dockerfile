@@ -22,16 +22,16 @@ RUN           git clone --recurse-submodules https://"$GIT_REPO" .; git checkout
 FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_FETCHER                                              AS fetcher-nqptp
 
 ARG           GIT_REPO=github.com/mikebrady/nqptp
-ARG           GIT_VERSION=b247899
-ARG           GIT_COMMIT=b24789982d5cc067ecf6e8f3352b701d177530ec
+ARG           GIT_VERSION=v1.2.4
+ARG           GIT_COMMIT=591f425d9da69f1c4e09f3ad09611b758937b3e5
 
 RUN           git clone --recurse-submodules https://"$GIT_REPO" .; git checkout "$GIT_COMMIT"
 
 FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_FETCHER                                              AS fetcher-shairport
 
 ARG           GIT_REPO=github.com/mikebrady/shairport-sync
-ARG           GIT_VERSION=v4.2.0
-ARG           GIT_COMMIT=b56d55151890ff846a667b50d15e9e6b562144d2
+ARG           GIT_VERSION=4.3.2
+ARG           GIT_COMMIT=2ed5d998fb52040174af200f96f868622f87453a
 
 RUN           git clone --recurse-submodules https://"$GIT_REPO" .; git checkout "$GIT_COMMIT"
 
