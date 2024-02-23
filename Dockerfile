@@ -66,6 +66,17 @@ ARG           TARGETVARIANT
 
 COPY          --from=fetcher-nqptp /source /source
 
+RUN           --mount=type=secret,uid=100,id=CA \
+              --mount=type=secret,uid=100,id=CERTIFICATE \
+              --mount=type=secret,uid=100,id=KEY \
+              --mount=type=secret,uid=100,id=GPG.gpg \
+              --mount=type=secret,id=NETRC \
+              --mount=type=secret,id=APT_SOURCES \
+              --mount=type=secret,id=APT_CONFIG \
+              apt-get update -qq; \
+              apt-get install -qq --no-install-recommends \
+                libcap2-bin
+
 # hadolint ignore=SC2046
 RUN           eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" | sed -e "s/^armv6$/armel/" -e "s/^armv7$/armhf/" -e "s/^ppc64le$/ppc64el/" -e "s/^386$/i386/")")"; \
               export PKG_CONFIG="${DEB_TARGET_GNU_TYPE}-pkg-config"; \
