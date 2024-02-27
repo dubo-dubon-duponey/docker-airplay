@@ -1,10 +1,10 @@
 ARG           FROM_REGISTRY=docker.io/dubodubonduponey
 
-ARG           FROM_IMAGE_FETCHER=base:golang-bookworm-2023-09-05
-ARG           FROM_IMAGE_BUILDER=base:builder-bookworm-2023-09-05
-ARG           FROM_IMAGE_AUDITOR=base:auditor-bookworm-2023-09-05
-ARG           FROM_IMAGE_TOOLS=tools:linux-bookworm-2023-09-05
-ARG           FROM_IMAGE_RUNTIME=base:runtime-bookworm-2023-09-05
+ARG           FROM_IMAGE_FETCHER=base:golang-bookworm-2024-02-20
+ARG           FROM_IMAGE_BUILDER=base:builder-bookworm-2024-02-20
+ARG           FROM_IMAGE_AUDITOR=base:auditor-bookworm-2024-02-20
+ARG           FROM_IMAGE_TOOLS=tools:linux-bookworm-2024-02-20
+ARG           FROM_IMAGE_RUNTIME=base:runtime-bookworm-2024-02-20
 
 FROM          $FROM_REGISTRY/$FROM_IMAGE_TOOLS                                                                          AS builder-tools
 
@@ -122,7 +122,7 @@ RUN           --mount=type=secret,uid=100,id=CA \
                 libsoxr-dev:"$DEB_TARGET_ARCH"=0.1.3-4 \
                 libsndfile1-dev:"$DEB_TARGET_ARCH"; \
               apt-get install -qq --no-install-recommends \
-                libssl-dev:"$DEB_TARGET_ARCH"=3.0.9-1 \
+                libssl-dev:"$DEB_TARGET_ARCH"=3.0.11-1~deb12u2 \
                 libavahi-client-dev:"$DEB_TARGET_ARCH"=0.8-10 \
                 avahi-daemon:"$DEB_TARGET_ARCH"=0.8-10
 
