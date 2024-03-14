@@ -10,12 +10,12 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           submodules: true
 
       - name: Enable cache
-        uses: actions/cache@v2.1.1
+        uses: actions/cache@v4
         with:
           path: $GITHUB_WORKSPACE/cache
           key: cache
@@ -56,6 +56,9 @@ jobs:
           bkaddr="$(./hack/helpers/start-buildkit.sh 2>/dev/null)"
           # Sanity check
           echo "Sanity checks"
+          env
+          pwd
+          ls -lA bin
           cue version
           hadolint --version
           shellcheck --version
