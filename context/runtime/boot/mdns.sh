@@ -64,7 +64,7 @@ mdns::start::avahi(){
   [ "$(printf "%s" "$LOG_LEVEL" | tr '[:upper:]' '[:lower:]')" != "debug" ] || args+=(--debug)
 
   # -D/--daemonize implies -s/--syslog that we do not want, so, just background it
-  avahi-daemon -f /config/avahi/main.conf --no-drop-root --no-chroot "${args[@]}"
+  avahi-daemon -f /config/avahi/main.conf --no-drop-root --no-chroot "${args[@]}" &
 
   local tries=1
   # Wait until the socket is there

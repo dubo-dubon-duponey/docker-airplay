@@ -4,13 +4,14 @@ set -o errexit -o errtrace -o functrace -o nounset -o pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]:-$PWD}")" 2>/dev/null 1>&2 && pwd)"
 readonly root
 # shellcheck source=/dev/null
-source "$root/helpers.sh"
-source "$root/mdns.sh"
+. "$root/helpers.sh"
+# shellcheck source=/dev/null
+. "$root/mdns.sh"
 
 helpers::dir::writable "/tmp"
 
 mdns::start::dbus
-mdns::start::avahi &
+mdns::start::avahi
 
 nqptp &
 

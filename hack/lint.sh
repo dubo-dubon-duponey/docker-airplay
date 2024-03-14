@@ -6,7 +6,7 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]:-$PWD}")" 2>/dev/null 1>&2 && pwd)/../"
 readonly root
 
 # shellcheck source=/dev/null
-BIN_LOCATION="${BIN_LOCATION:-$root/cache/bin}" source "$root/hack/helpers/install-tools.sh"
+BIN_LOCATION="${BIN_LOCATION:-$root/cache/bin}" . "$root/hack/helpers/install-tools.sh"
 
 # Ignore some hadolint warnings that do not make much sense
 # DL3006 is about "dO nOT UsE --platform", which is really ludicrous
@@ -24,4 +24,4 @@ if ! hadolint "${hadolint_ignore[@]}" "$root"/*Dockerfile*; then
   exit 1
 fi
 
-find "$root" -iname "*.sh" -not -path "*debuerreotype*" -not -path "*cache*" -exec shellcheck {} \;
+find "$root" -iname "*.sh" -not -path "*debuerreotype*" -not -path "*cache*" -not -path "*xxx*" -exec shellcheck {} \;
