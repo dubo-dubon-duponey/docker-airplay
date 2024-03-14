@@ -51,7 +51,11 @@ jobs:
         run: |
           # Set the path and install the tools
           export PATH="$GITHUB_WORKSPACE/cache/bin:$PATH"
+          echo "$PATH"
           ./hack/helpers/install-tools.sh
+          echo "$PATH"
+          exit 1
+
           # Start buildkit
           bkaddr="$(./hack/helpers/start-buildkit.sh 2>/dev/null)"
           # Sanity check
