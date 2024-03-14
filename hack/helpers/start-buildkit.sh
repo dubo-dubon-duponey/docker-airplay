@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -o errexit -o errtrace -o functrace -o nounset -o pipefail
 
-export SUITE=bullseye
-export DATE=2021-08-01
+export SUITE=bookworm
+export DATE=2024-02-20
 
 readonly IMAGE_BLDKT="${IMAGE_BLDKT:-docker.io/dubodubonduponey/buildkit:$SUITE-$DATE}"
 
@@ -12,9 +12,9 @@ setup::buildkit() {
       -p 4242:4242 \
       --network host \
       --name dbdbdp-buildkit \
-      --env MDNS_ENABLED=true \
-      --env MDNS_HOST=buildkit-machina \
-      --env MDNS_NAME="Dubo Buildkit on la machina" \
+      --env MOD_MDNS_ENABLED=true \
+      --env MOD_MDNS_HOST=buildkit-machina \
+      --env MOD_MDNS_NAME="Dubo Buildkit on la machina" \
       --entrypoint buildkitd \
       --user root \
       --privileged \

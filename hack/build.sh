@@ -6,7 +6,7 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]:-$PWD}")" 2>/dev/null 1>&2 && pwd)/../"
 readonly root
 
 # shellcheck source=/dev/null
-BIN_LOCATION="${BIN_LOCATION:-$root/cache/bin}" source "$root/hack/helpers/install-tools.sh"
+BIN_LOCATION="${BIN_LOCATION:-$root/cache/bin}" . "$root/hack/helpers/install-tools.sh"
 
 # Build the cue invocation
 params=(cue)

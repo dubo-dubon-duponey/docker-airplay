@@ -75,7 +75,7 @@ RUN           --mount=type=secret,uid=100,id=CA \
               --mount=type=secret,id=APT_CONFIG \
               apt-get update -qq; \
               apt-get install -qq --no-install-recommends \
-                libcap2-bin
+                libcap2-bin=1:2.66-4
 
 # hadolint ignore=SC2046
 RUN           eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" | sed -e "s/^armv6$/armel/" -e "s/^armv7$/armhf/" -e "s/^ppc64le$/ppc64el/" -e "s/^386$/i386/")")"; \
@@ -94,7 +94,7 @@ FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_BUILDER      
 ARG           TARGETARCH
 ARG           TARGETVARIANT
 
-# hadolint ignore=DL3009
+# hadolint ignore=DL3008
 RUN           --mount=type=secret,uid=100,id=CA \
               --mount=type=secret,uid=100,id=CERTIFICATE \
               --mount=type=secret,uid=100,id=KEY \
@@ -276,10 +276,10 @@ RUN           --mount=type=secret,uid=100,id=CA \
               --mount=type=secret,id=APT_CONFIG \
               apt-get update -qq \
               && apt-get install -qq --no-install-recommends \
-                libavutil57 \
-                libavcodec59 \
-                libavformat59 \
-                avahi-daemon \
+                libavutil57=7:5.1.4-0+deb12u1 \
+                libavcodec59=7:5.1.4-0+deb12u1 \
+                libavformat59=7:5.1.4-0+deb12u1 \
+                avahi-daemon=0.8-10 \
               && apt-get -qq autoremove       \
               && apt-get -qq clean            \
               && rm -rf /var/lib/apt/lists/*  \
