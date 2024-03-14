@@ -4,7 +4,8 @@ set -o errexit -o errtrace -o functrace -o nounset -o pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]:-$PWD}")" 2>/dev/null 1>&2 && pwd)/../"
 readonly root
 
-export BUILDKIT_HOST="$("$root/hack/helpers/start-buildkit.sh")"
+BUILDKIT_HOST="$("$root/hack/helpers/start-buildkit.sh")"
+export BUILDKIT_HOST
 
 # Simple no-thrill build tester
 # XXX Currently reduced to a single architecture to avoid using all disk space until we figure out our space efficiency problem (likely the fat builder image getting duplicated over and over)
