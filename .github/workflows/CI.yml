@@ -50,26 +50,12 @@ jobs:
       - name: test
         run: |
           # Set the path and install the tools
-          export PATH="$GITHUB_WORKSPACE/cache/bin:$PATH"
-          echo "$PATH"
+          export PATH="$HOME/bin:$PATH"
           ./hack/helpers/install-tools.sh
-          echo "$PATH"
-          exit 1
-
           # Start buildkit
           bkaddr="$(./hack/helpers/start-buildkit.sh 2>/dev/null)"
           # Sanity check
           echo "Sanity checks"
-          pwd
-          echo "- Cache"
-          ls -lA cache || true
-          echo "- Cache bin"
-          ls -lA cache/bin || true
-          echo "- Runner bin"
-          ls -lA /home/runner/bin || true
-          echo "- Deon"
-          which cue
-          file $(which cue)
           cue version
           hadolint --version
           shellcheck --version
