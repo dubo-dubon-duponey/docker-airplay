@@ -58,7 +58,10 @@ jobs:
           echo "Sanity checks"
           env
           pwd
-          ls -lA bin
+          ls -lA cache
+          ls -lA cache/bin
+          which cue
+          file $(which cue)
           cue version
           hadolint --version
           shellcheck --version
