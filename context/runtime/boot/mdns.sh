@@ -38,7 +38,7 @@ mdns::records::resolve(){
 mdns::start::broadcaster(){
   [ ! -e "$_default_mod_mdns_configuration_path" ] || mdns::records::load "$_default_mod_mdns_configuration_path"
   local IFS=","
-  goello-server-ng -json "[${_internal_mod_mdns_records[*]}]"
+  goello-server-ng -json "[${_internal_mod_mdns_records[*]}]" &
 }
 
 mdns::start::avahi(){
@@ -61,7 +61,7 @@ mdns::start::avahi(){
   # Cleanup leftovers on container restart
   rm -f "$(dirname "$avahisocket")/pid"
 
-  [ "$(printf "%s" "$LOG_LEVEL" | tr '[:upper:]' '[:lower:]')" != "debug" ] || args+=(--debug)
+  [ "$LOG_LEVEL" != "debug" ] || args+=(--debug)
 
   # -D/--daemonize implies -s/--syslog that we do not want, so, just background it
   avahi-daemon -f /config/avahi/main.conf --no-drop-root --no-chroot "${args[@]}" &

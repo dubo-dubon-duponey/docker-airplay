@@ -29,7 +29,7 @@ These reasons could be that you are interested in:
 * observable
   * [x] healthcheck
   * [x] logs to stdout
-  * [ ] ~~prometheus endpoint~~ not applicable
+  * [ ] ~~prometheus endpoint~~
 
 ## Run
 
