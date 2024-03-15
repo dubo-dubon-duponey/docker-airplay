@@ -24,9 +24,9 @@ args=(\
   --configfile /config/shairport-sync/main.conf \
 )
 
-[ "$(printf "%s" "$LOG_LEVEL" | tr '[:upper:]' '[:lower:]')" != "debug" ] || args+=(-vvv --statistics)
-[ "$(printf "%s" "$LOG_LEVEL" | tr '[:upper:]' '[:lower:]')" != "info" ] || args+=(-vv)
-[ "$(printf "%s" "$LOG_LEVEL" | tr '[:upper:]' '[:lower:]')" != "warn" ] || args+=(-v)
+[ "$LOG_LEVEL" != "debug" ] || args+=(-vvv --statistics)
+[ "$LOG_LEVEL" != "info" ] || args+=(-vv)
+[ "$LOG_LEVEL" != "warning" ] || args+=(-v)
 args+=("$@")
 [ ! "$DEVICE" ] || [ "$OUTPUT" != "alsa" ] || args+=(-- -d "$DEVICE")
 

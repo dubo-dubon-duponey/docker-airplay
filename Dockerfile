@@ -105,22 +105,22 @@ RUN           --mount=type=secret,uid=100,id=CA \
               eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" | sed -e "s/^armv6$/armel/" -e "s/^armv7$/armhf/" -e "s/^ppc64le$/ppc64el/" -e "s/^386$/i386/")")"; \
               apt-get update -qq; \
               apt-get install -qq --no-install-recommends \
-                libavutil-dev:"$DEB_TARGET_ARCH" \
-                libavcodec-dev:"$DEB_TARGET_ARCH" \
-                libavformat-dev:"$DEB_TARGET_ARCH" \
-                uuid-dev:"$DEB_TARGET_ARCH" \
-                libgcrypt20-dev:"$DEB_TARGET_ARCH" \
-                libsodium-dev:"$DEB_TARGET_ARCH" \
-                libplist-dev:"$DEB_TARGET_ARCH" \
-                libmosquitto-dev:"$DEB_TARGET_ARCH" \
+                libavutil-dev:"$DEB_TARGET_ARCH"=7:5.1.4-0+deb12u1 \
+                libavcodec-dev:"$DEB_TARGET_ARCH"=7:5.1.4-0+deb12u1 \
+                libavformat-dev:"$DEB_TARGET_ARCH"=7:5.1.4-0+deb12u1 \
+                uuid-dev:"$DEB_TARGET_ARCH"=2.38.1-5+b1 \
+                libgcrypt20-dev:"$DEB_TARGET_ARCH"=1.10.1-3 \
+                libsodium-dev:"$DEB_TARGET_ARCH"=1.0.18-1 \
+                libplist-dev:"$DEB_TARGET_ARCH"=2.2.0-6+b2 \
+                libmosquitto-dev:"$DEB_TARGET_ARCH"=2.0.11-1.2+deb12u1 \
                 libasound2-dev:"$DEB_TARGET_ARCH"=1.2.8-1+b1 \
                 libconfig-dev:"$DEB_TARGET_ARCH"=1.5-0.4 \
                 libpopt-dev:"$DEB_TARGET_ARCH"=1.19+dfsg-1 \
-                xxd:"$DEB_TARGET_ARCH"; \
+                xxd:"$DEB_TARGET_ARCH"=2:9.0.1378-2; \
               apt-get install -qq --no-install-recommends \
-                libmbedtls-dev:"$DEB_TARGET_ARCH" \
+                libmbedtls-dev:"$DEB_TARGET_ARCH"==2.28.3-1 \
                 libsoxr-dev:"$DEB_TARGET_ARCH"=0.1.3-4 \
-                libsndfile1-dev:"$DEB_TARGET_ARCH"; \
+                libsndfile1-dev:"$DEB_TARGET_ARCH"=1.2.0-1; \
               apt-get install -qq --no-install-recommends \
                 libssl-dev:"$DEB_TARGET_ARCH"=3.0.11-1~deb12u2 \
                 libavahi-client-dev:"$DEB_TARGET_ARCH"=0.8-10 \
