@@ -118,7 +118,7 @@ RUN           --mount=type=secret,uid=100,id=CA \
                 libpopt-dev:"$DEB_TARGET_ARCH"=1.19+dfsg-1 \
                 xxd:"$DEB_TARGET_ARCH"=2:9.0.1378-2; \
               apt-get install -qq --no-install-recommends \
-                libmbedtls-dev:"$DEB_TARGET_ARCH"==2.28.3-1 \
+                libmbedtls-dev:"$DEB_TARGET_ARCH"=2.28.3-1 \
                 libsoxr-dev:"$DEB_TARGET_ARCH"=0.1.3-4 \
                 libsndfile1-dev:"$DEB_TARGET_ARCH"=1.2.0-1; \
               apt-get install -qq --no-install-recommends \
