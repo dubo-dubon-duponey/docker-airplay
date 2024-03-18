@@ -31,6 +31,7 @@ nqptp &
 [ "${MOD_MQTT_COVER:-}" == true ] && MOD_MQTT_COVER=yes || MOD_MQTT_COVER=no
 
 cp "$XDG_CONFIG_DIRS"/shairport-sync/main.conf "$XDG_CONFIG_HOME/shairport-sync/main.conf"
+# shellcheck disable=SC2016
 printf 'mqtt {
 	enabled = "%s"; // set this to yes to enable the mqtt-metadata-service
 	hostname = "%s"; // Hostname of the MQTT Broker

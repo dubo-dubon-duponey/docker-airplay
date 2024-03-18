@@ -178,13 +178,13 @@ RUN           eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" |
                 --with-apple-alac \
                 --with-metadata \
                 --with-mqtt-client \
-                --with-piddir=$XDG_RUNTIME_DIR/shairport-sync \
+                --with-piddir="$XDG_RUNTIME_DIR"/shairport-sync \
                 --with-ssl=openssl \
                 --with-avahi \
                 --with-os=linux \
                 --with-convolution \
                 --with-soxr \
-                --sysconfdir=$XDG_CONFIG_DIRS \
+                --sysconfdir="$XDG_CONFIG_DIRS"/shairport-sync \
                 --without-configfiles	\
                 --without-sndio \
                 --without-pa \
