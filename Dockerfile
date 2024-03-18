@@ -178,14 +178,14 @@ RUN           eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" |
                 --with-apple-alac \
                 --with-metadata \
                 --with-mqtt-client \
-                --with-piddir=/tmp \
+                --with-piddir=$XDG_RUNTIME_DIR/shairport-sync \
                 --with-ssl=openssl \
                 --with-avahi \
                 --with-os=linux \
-                --with-configfiles	\
-                --without-soxr \
-                --without-convolution \
-                --sysconfdir=/config \
+                --with-convolution \
+                --with-soxr \
+                --sysconfdir=$XDG_CONFIG_DIRS \
+                --without-configfiles	\
                 --without-sndio \
                 --without-pa \
                 --without-pw \
@@ -286,7 +286,9 @@ RUN           --mount=type=secret,uid=100,id=CA \
               && rm -rf /tmp/*                \
               && rm -rf /var/tmp/*
 
-RUN           mkdir -p /run/avahi-daemon; chown avahi:avahi /run/avahi-daemon; chmod 777 /run/avahi-daemon
+# Deviate avahi temporary files into /tmp (there is a socket, so, probably need exec). Avahi is also braindead and requires the folder to belong to user avahi
+# even if started with a different user.
+RUN           mkdir -p "$XDG_RUNTIME_DIR"/avahi-daemon; ln -s "$XDG_RUNTIME_DIR"/avahi-daemon /run; chown avahi:avahi /run/avahi-daemon; chmod 777 /run/avahi-daemon
 
 USER          dubo-dubon-duponey
 
@@ -299,6 +301,8 @@ ENV           LOG_LEVEL="warn"
 ENV           DEVICE=""
 # (alsa|stdout|pipe)
 ENV           OUTPUT=alsa
+# basic or soxr - basic is recommend on rpi3 - soxr may be better on rpi4+
+ENV           STUFFING="basic"
 
 ENV           ADVANCED_AIRPLAY_PORT=7000
 ENV           HEALTHCHECK_URL=rtsp://127.0.0.1:$ADVANCED_AIRPLAY_PORT
@@ -308,9 +312,7 @@ EXPOSE        $ADVANCED_AIRPLAY_PORT/tcp
 EXPOSE        319
 EXPOSE        320
 
-# Used by dbus
+# Used by dbus, avahi and shairport-sync (see entrypoint.sh)
 VOLUME        /tmp
-# Avahi is special... ;/
-VOLUME        /run/avahi-daemon
 
 HEALTHCHECK   --interval=120s --timeout=30s --start-period=10s --retries=1 CMD rtsp-health || exit 1

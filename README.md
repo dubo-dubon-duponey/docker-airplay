@@ -61,6 +61,7 @@ The following environment variables allow for high-level control over shairport:
 * DEVICE (example: `default:CARD=Mojo`) controls the output device (default to "default")
 * LOG_LEVEL if set to "debug" will pass along `-vvv` and `--statistics` to shairport (noisy!)
 * ADVANCED_AIRPLAY_PORT controls the port to bind to (defaults to 7000)
+* STUFFING (basic or soxr) controls the stuffing mode (see soxr section below)
 
 Any additional arguments passed when running the image will get fed to the `shairport-sync` binary directly.
 
@@ -80,6 +81,8 @@ For more advanced control over `shairport-sync` configuration, mount `/config/sh
 
 In our experience, soxr yields bad results on RPI 3b.
 We advise against using it on low-end hardware.
+Henceforth, default in the image is "basic".
+If you want soxr, use `STUFFING=soxr`
 
 ### About mDNS
 
