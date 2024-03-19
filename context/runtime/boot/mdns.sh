@@ -109,10 +109,8 @@ mdns::start::dbus(){
   # https://man7.org/linux/man-pages/man3/sd_bus_default.3.html
   # https://specifications.freedesktop.org/basedir-spec/latest/ar01s03.html
 
-  # $XDG_RUNTIME_DIR=/tmp/runtime
-  # Configuration file also has that ^ hardcoded, so, cannot use the variable...
-
   local dbussocket=/magnetar/runtime/dbus/system_bus_socket
+  # Configuration file also has that ^ hardcoded, so, cannot use the variable...
 
   # Ensure directory exists
   helpers::dir::writable "$(dirname "$dbussocket")" create
