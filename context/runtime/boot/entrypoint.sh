@@ -21,11 +21,11 @@ nqptp &
 [ "${MOD_MQTT_ENABLED:-}" == true ] && MOD_MQTT_ENABLED=yes || MOD_MQTT_ENABLED=no
 [ "${MOD_MQTT_COVER:-}" == true ] && MOD_MQTT_COVER=yes || MOD_MQTT_COVER=no
 
-cp "$XDG_CONFIG_DIRS"/shairport-sync/main.conf "$XDG_RUNTIME_DIR"/shairport-sync/main.conf
-[ ! -e "$XDG_CONFIG_HOME"/shairport-sync/main.conf ] || cat "$XDG_CONFIG_HOME"/shairport-sync/main.conf >> "$XDG_RUNTIME_DIR"/shairport-sync/main.conf
+configuration="$(cat "$XDG_CONFIG_DIRS"/shairport-sync/main.conf)"
+[ ! -e "$XDG_CONFIG_HOME"/shairport-sync/main.conf ] || configuration+="$(cat "$XDG_CONFIG_HOME"/shairport-sync/main.conf)"
 
 # shellcheck disable=SC2016
-printf 'mqtt {
+configuration+="$(printf 'mqtt {
 	enabled = "%s"; // set this to yes to enable the mqtt-metadata-service
 	hostname = "%s"; // Hostname of the MQTT Broker
 	port = %s; // Port on the MQTT Broker to connect to
@@ -54,8 +54,9 @@ printf 'mqtt {
   "${MOD_MQTT_CA:-NULL}" \
   "${MOD_MQTT_CERT:-NULL}" \
   "${MOD_MQTT_KEY:-NULL}" \
-  "$MOD_MQTT_COVER" \
-  >> "$XDG_RUNTIME_DIR"/shairport-sync/main.conf
+  "$MOD_MQTT_COVER")"
+
+printf "%s" "$configuration" > "$XDG_RUNTIME_DIR"/shairport-sync/main.conf
 
 # https://github.com/mikebrady/shairport-sync/blob/master/scripts/shairport-sync.conf
 args=(\
