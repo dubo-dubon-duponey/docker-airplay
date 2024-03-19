@@ -8,19 +8,10 @@ readonly root
 # shellcheck source=/dev/null
 . "$root/mdns.sh"
 
-# Airplay need these
-# /tmp/runtime
-helpers::dir::writable "$XDG_RUNTIME_DIR/shairport-sync/metadata" create
-# /tmp/cache
-helpers::dir::writable "$XDG_CACHE_HOME/shairport-sync/coverart" create
-# /tmp/config
-helpers::dir::writable "$XDG_CONFIG_HOME/shairport-sync" create
-
-# Avahi and dbus
-# /tmp/runtime
-helpers::dir::writable "$XDG_RUNTIME_DIR/avahi-daemon"
-# /tmp/runtime
 helpers::dir::writable "$XDG_RUNTIME_DIR/dbus" create
+helpers::dir::writable "$XDG_RUNTIME_DIR/shairport-sync/metadata" create
+helpers::dir::writable "$XDG_CACHE_HOME/shairport-sync/coverart" create
+helpers::dir::writable "$XDG_STATE_HOME/avahi-daemon"
 
 mdns::start::dbus
 mdns::start::avahi
@@ -30,7 +21,9 @@ nqptp &
 [ "${MOD_MQTT_ENABLED:-}" == true ] && MOD_MQTT_ENABLED=yes || MOD_MQTT_ENABLED=no
 [ "${MOD_MQTT_COVER:-}" == true ] && MOD_MQTT_COVER=yes || MOD_MQTT_COVER=no
 
-cp "$XDG_CONFIG_DIRS"/shairport-sync/main.conf "$XDG_CONFIG_HOME/shairport-sync/main.conf"
+cp "$XDG_CONFIG_DIRS"/shairport-sync/main.conf "$XDG_RUNTIME_DIR"/shairport-sync/main.conf
+[ ! -e "$XDG_CONFIG_HOME"/shairport-sync/main.conf ] || cat "$XDG_CONFIG_HOME"/shairport-sync/main.conf >> "$XDG_RUNTIME_DIR"/shairport-sync/main.conf
+
 # shellcheck disable=SC2016
 printf 'mqtt {
 	enabled = "%s"; // set this to yes to enable the mqtt-metadata-service
@@ -62,7 +55,7 @@ printf 'mqtt {
   "${MOD_MQTT_CERT:-NULL}" \
   "${MOD_MQTT_KEY:-NULL}" \
   "$MOD_MQTT_COVER" \
-  >> "$XDG_CONFIG_HOME/shairport-sync/main.conf"
+  >> "$XDG_RUNTIME_DIR"/shairport-sync/main.conf
 
 # https://github.com/mikebrady/shairport-sync/blob/master/scripts/shairport-sync.conf
 args=(\

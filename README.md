@@ -75,7 +75,8 @@ This is specifically convenient to address a different mixer.
 
 ### Custom configuration file
 
-For more advanced control over `shairport-sync` configuration, mount `/config/shairport-sync/main.conf`.
+For more advanced control over `shairport-sync` configuration, mount `/magnetar/user/config/shairport-sync/main.conf` 
+and just add whichever configuration you want aggregated to the default one.
 
 ### About soxr
 

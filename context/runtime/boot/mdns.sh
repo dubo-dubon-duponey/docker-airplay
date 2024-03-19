@@ -90,7 +90,7 @@ mdns::start::avahi(){
   [ "$LOG_LEVEL" != "debug" ] || args+=(--debug)
 
   # -D/--daemonize implies -s/--syslog that we do not want, so, just background it
-  avahi-daemon -f /config/avahi/main.conf --no-drop-root --no-chroot "${args[@]}" &
+  avahi-daemon -f "$XDG_CONFIG_DIRS"/avahi/main.conf --no-drop-root --no-chroot "${args[@]}" &
 
   local tries=1
   # Wait until the socket is there
@@ -112,7 +112,7 @@ mdns::start::dbus(){
   # $XDG_RUNTIME_DIR=/tmp/runtime
   # Configuration file also has that ^ hardcoded, so, cannot use the variable...
 
-  local dbussocket=/tmp/runtime/dbus/system_bus_socket
+  local dbussocket=/magnetar/runtime/dbus/system_bus_socket
 
   # Ensure directory exists
   helpers::dir::writable "$(dirname "$dbussocket")" create
@@ -122,7 +122,7 @@ mdns::start::dbus(){
   export DBUS_SESSION_BUS_ADDRESS=unix:path="$dbussocket"
 
   # Start it, without a PID file
-  dbus-daemon --nopidfile --config-file /config/dbus/main.conf
+  dbus-daemon --nopidfile --config-file "$XDG_CONFIG_DIRS"/dbus/main.conf
 
   local tries=1
   # Wait until the socket is there

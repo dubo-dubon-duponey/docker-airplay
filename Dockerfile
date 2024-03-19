@@ -283,12 +283,11 @@ RUN           --mount=type=secret,uid=100,id=CA \
               && apt-get -qq autoremove       \
               && apt-get -qq clean            \
               && rm -rf /var/lib/apt/lists/*  \
-              && rm -rf /tmp/*                \
               && rm -rf /var/tmp/*
 
 # Deviate avahi temporary files into /tmp (there is a socket, so, probably need exec). Avahi is also braindead and requires the folder to belong to user avahi
 # even if started with a different user.
-RUN           mkdir -p "$XDG_RUNTIME_DIR"/avahi-daemon; ln -s "$XDG_RUNTIME_DIR"/avahi-daemon /run; chown avahi:avahi /run/avahi-daemon; chmod 777 /run/avahi-daemon
+RUN           mkdir -p "$XDG_STATE_HOME"/avahi-daemon; ln -s "$XDG_STATE_HOME"/avahi-daemon /run; chown avahi:avahi /run/avahi-daemon; chmod 777 /run/avahi-daemon
 
 USER          dubo-dubon-duponey
 
@@ -322,7 +321,8 @@ EXPOSE        $ADVANCED_AIRPLAY_PORT/tcp
 EXPOSE        319
 EXPOSE        320
 
-# Used by dbus, avahi and shairport-sync (see entrypoint.sh)
-VOLUME        /tmp
+VOLUME        $XDG_RUNTIME_DIR
+VOLUME        $XDG_CACHE_HOME
+VOLUME        $XDG_STATE_HOME
 
 HEALTHCHECK   --interval=120s --timeout=30s --start-period=10s --retries=1 CMD rtsp-health || exit 1
