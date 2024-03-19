@@ -120,6 +120,7 @@ RUN           --mount=type=secret,uid=100,id=CA \
               apt-get install -qq --no-install-recommends \
                 libmbedtls-dev:"$DEB_TARGET_ARCH"=2.28.3-1 \
                 libsoxr-dev:"$DEB_TARGET_ARCH"=0.1.3-4 \
+                libflac12:"$DEB_TARGET_ARCH"=1.4.2+ds-2 \
                 libsndfile1-dev:"$DEB_TARGET_ARCH"=1.2.0-1; \
               apt-get install -qq --no-install-recommends \
                 libssl-dev:"$DEB_TARGET_ARCH"=3.0.11-1~deb12u2 \
@@ -141,6 +142,7 @@ RUN           eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" |
               cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libuuid.so.1        /dist/boot/lib; \
               cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libmbedcrypto.so.7  /dist/boot/lib; \
               cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libsoxr.so.0        /dist/boot/lib; \
+              cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libFLAC.so.12       /dist/boot/lib; \
               cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libsndfile.so.1     /dist/boot/lib; \
               cp /usr/lib/"$DEB_TARGET_MULTIARCH"/libavahi-client.so.3 /dist/boot/lib
 
