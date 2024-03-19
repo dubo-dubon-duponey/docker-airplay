@@ -304,6 +304,16 @@ ENV           OUTPUT=alsa
 # basic or soxr - basic is recommend on rpi3 - soxr may be better on rpi4+
 ENV           STUFFING="basic"
 
+ENV           MOD_MQTT_ENABLED=false
+ENV           MOD_MQTT_COVER=true
+ENV           MOD_MQTT_HOST=""
+ENV           MOD_MQTT_PORT=""
+ENV           MOD_MQTT_USER=""
+ENV           MOD_MQTT_PASSWORD=""
+ENV           MOD_MQTT_CA=""
+ENV           MOD_MQTT_CERT=""
+ENV           MOD_MQTT_KEY=""
+
 ENV           ADVANCED_AIRPLAY_PORT=7000
 ENV           HEALTHCHECK_URL=rtsp://127.0.0.1:$ADVANCED_AIRPLAY_PORT
 
