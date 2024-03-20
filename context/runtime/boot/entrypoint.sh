@@ -9,8 +9,8 @@ readonly root
 . "$root/mdns.sh"
 
 helpers::dir::writable "$XDG_RUNTIME_DIR/dbus" create
-helpers::dir::writable "$XDG_RUNTIME_DIR/shairport-sync/metadata" create
-helpers::dir::writable "$XDG_CACHE_HOME/shairport-sync/coverart" create
+helpers::dir::writable "$XDG_RUNTIME_DIR/shairport-sync" create
+helpers::dir::writable "$XDG_CACHE_HOME/shairport-sync" create
 helpers::dir::writable "$XDG_STATE_HOME/avahi-daemon"
 
 mdns::start::dbus
@@ -31,12 +31,12 @@ mqtt = {
 	enabled = "%s"; // set this to yes to enable the mqtt-metadata-service
 	hostname = "%s"; // Hostname of the MQTT Broker
 	port = %s; // Port on the MQTT Broker to connect to
-	username = %s; //set this to a string to your username in order to enable username authentication
-	password = %s; //set this to a string you your password in order to enable username & password authentication
+	username = "%s"; //set this to a string to your username in order to enable username authentication
+	password = "%s"; //set this to a string you your password in order to enable username & password authentication
 //	capath = NULL; //set this to the folder with the CA-Certificates to be accepted for the server certificate. If not set, TLS is not used
-	cafile = %s; //this may be used as an (exclusive) alternative to capath with a single file for all ca-certificates
-	certfile = %s; //set this to a string to a user certificate to enable MQTT Client certificates. keyfile must also be set!
-	keyfile = %s; //private key for MQTT Client authentication
+	cafile = "%s"; //this may be used as an (exclusive) alternative to capath with a single file for all ca-certificates
+	certfile = "%s"; //set this to a string to a user certificate to enable MQTT Client certificates. keyfile must also be set!
+	keyfile = "%s"; //private key for MQTT Client authentication
 //	topic = NULL; //MQTT topic where this instance of shairport-sync should publish. If not set, the general.name value is used.
 //	publish_raw = "no"; //whether to publish all available metadata under the codes given in the metadata docs.
 //	publish_parsed = "no"; //whether to publish a small (but useful) subset of metadata under human-understandable topics
