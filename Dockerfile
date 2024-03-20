@@ -326,6 +326,11 @@ EXPOSE        $ADVANCED_AIRPLAY_PORT/tcp
 EXPOSE        319
 EXPOSE        320
 
+# RTSP port
+EXPOSE        7000
+# UDP port range
+EXPOSE        6001-6011/udp
+
 VOLUME        "$XDG_RUNTIME_DIR"
 VOLUME        "$XDG_CACHE_HOME"
 VOLUME        "$XDG_STATE_HOME"
