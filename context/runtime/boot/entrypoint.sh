@@ -21,8 +21,8 @@ nqptp &
 [ "${MOD_MQTT_ENABLED:-}" == true ] && MOD_MQTT_ENABLED=yes || MOD_MQTT_ENABLED=no
 [ "${MOD_MQTT_COVER:-}" == true ] && MOD_MQTT_COVER=yes || MOD_MQTT_COVER=no
 
-configuration="$(cat "$XDG_CONFIG_DIRS"/shairport-sync/main.conf)"
-[ ! -e "$XDG_CONFIG_HOME"/shairport-sync/main.conf ] || configuration+="$(cat "$XDG_CONFIG_HOME"/shairport-sync/main.conf)"
+configuration="$(cat "$XDG_CONFIG_DIRS"/shairport-sync/main.conf)\n\n"
+[ ! -e "$XDG_CONFIG_HOME"/shairport-sync/main.conf ] || configuration+="$(cat "$XDG_CONFIG_HOME"/shairport-sync/main.conf)\n\n"
 
 # shellcheck disable=SC2016
 configuration+="$(printf 'mqtt {
@@ -45,7 +45,8 @@ configuration+="$(printf 'mqtt {
 	publish_cover = "%s"; //whether to publish the cover over mqtt in binary form. This may lead to a bit of load on the broker
 //	enable_remote = "no"; //whether to remote control via MQTT. RC is available under `topic`/remote.
 //	Available commands are "command", "beginff", "beginrew", "mutetoggle", "nextitem", "previtem", "pause", "playpause", "play", "stop", "playresume", "shuffle_songs", "volumedown", "volumeup"
-}' \
+}
+' \
   "$MOD_MQTT_ENABLED" \
   "${MOD_MQTT_HOST:-}" \
   "${MOD_MQTT_PORT:-}" \
