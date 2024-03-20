@@ -71,9 +71,9 @@ args=(\
   --configfile "$XDG_RUNTIME_DIR"/shairport-sync/main.conf \
 )
 
-[ "$LOG_LEVEL" != "debug" ] || args+=(-vvv --statistics)
-[ "$LOG_LEVEL" != "info" ] || args+=(-vv)
-[ "$LOG_LEVEL" != "warning" ] || args+=(-v)
+# Technically, there is also -vvv - which is "probably too much"
+[ "$LOG_LEVEL" != "debug" ] || args+=(-vv --statistics)
+[ "$LOG_LEVEL" != "info" ] || args+=(-v)
 [ "$STUFFING" == "soxr" ] && args+=(--stuffing soxr) || args+=(--stuffing basic)
 args+=("$@")
 [ ! "$DEVICE" ] || [ "$OUTPUT" != "alsa" ] || args+=(-- -d "$DEVICE")
