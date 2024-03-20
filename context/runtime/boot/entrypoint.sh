@@ -45,7 +45,8 @@ configuration+="$(printf 'mqtt {
 	publish_cover = "%s"; //whether to publish the cover over mqtt in binary form. This may lead to a bit of load on the broker
 //	enable_remote = "no"; //whether to remote control via MQTT. RC is available under `topic`/remote.
 //	Available commands are "command", "beginff", "beginrew", "mutetoggle", "nextitem", "previtem", "pause", "playpause", "play", "stop", "playresume", "shuffle_songs", "volumedown", "volumeup"
-}
+};
+
 ' \
   "$MOD_MQTT_ENABLED" \
   "${MOD_MQTT_HOST:-}" \
