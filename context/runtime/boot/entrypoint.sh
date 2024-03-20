@@ -64,7 +64,7 @@ args=(\
   --output "$OUTPUT" \
   --mdns avahi \
   --port "${ADVANCED_AIRPLAY_PORT:-7000}" \
-  --configfile "$XDG_CONFIG_HOME"/shairport-sync/main.conf \
+  --configfile "$XDG_RUNTIME_DIR"/shairport-sync/main.conf \
 )
 
 [ "$LOG_LEVEL" != "debug" ] || args+=(-vvv --statistics)

@@ -241,6 +241,8 @@ RUN           setcap 'cap_net_bind_service+ep'                /dist/boot/bin/nqp
 
 # hadolint ignore=SC2016
 RUN           patchelf --set-rpath '$ORIGIN/../lib'           /dist/boot/bin/shairport-sync
+# hadolint ignore=SC2016
+RUN           find /dist/boot/lib -type f -exec patchelf --set-rpath '$ORIGIN/../lib' {} \;
 
 RUN           RUNNING=true \
               STATIC=true \
