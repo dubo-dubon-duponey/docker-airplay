@@ -27,7 +27,7 @@ configuration="$(cat "$XDG_CONFIG_DIRS"/shairport-sync/main.conf)"
 # shellcheck disable=SC2016
 configuration+="$(printf '
 
-mqtt {
+mqtt = {
 	enabled = "%s"; // set this to yes to enable the mqtt-metadata-service
 	hostname = "%s"; // Hostname of the MQTT Broker
 	port = %s; // Port on the MQTT Broker to connect to
