@@ -52,7 +52,7 @@ mqtt = {
 ' \
   "$MOD_MQTT_ENABLED" \
   "${MOD_MQTT_HOST:-}" \
-  "${MOD_MQTT_PORT:-}" \
+  "${MOD_MQTT_PORT:-1883}" \
   "${MOD_MQTT_USER:-NULL}" \
   "${MOD_MQTT_PASSWORD:-NULL}" \
   "${MOD_MQTT_CA:-NULL}" \
