@@ -4,13 +4,19 @@ A Docker image to run an AirPlay 2 receiver.
 
 This is based on [shairport-sync](https://github.com/mikebrady/shairport-sync), [nqptp](https://github.com/mikebrady/nqptp) and the [ALAC](https://github.com/mikebrady/alac) library.
 
-NOTE: the awesome mikebrady has an *official* shairport-sync [on Docker Hub](https://hub.docker.com/r/mikebrady/shairport-sync).
-You should *really* try it *first* and make it work, and only come back here if you have *good* reasons to do so.
+<!> BEFORE YOU GO ANY FURTHER <!>
 
-These reasons could be that you are interested in:
-* tighter container security (no root, limited caps, hardened)
-* opinions (alsa only, Debian)
-* more opinions
+The awesome @mikebrady has an *official* shairport-sync image [on Docker Hub](https://hub.docker.com/r/mikebrady/shairport-sync),
+and there is nothing wrong with it.
+Most people should just use that, instead of our image.
+
+This here is an opinionated and more limited version that only support certain use-cases.
+
+Specifically:
+* security is much tighter
+* based on Debian instead of Alpine
+* configuration through environment variables
+* only supports alsa
 
 ## Image features
 
@@ -56,12 +62,11 @@ You need to run this with `--net host` or alternatively use mac(or ip)vlan netwo
 
 The following environment variables allow for high-level control over shairport:
 
-* MOD_MDNS_NAME controls the announced name
-* OUTPUT (alsa|pipe|stdout) controls the output
-* DEVICE (example: `default:CARD=Mojo`) controls the output device (default to "default")
-* LOG_LEVEL - debug, info, warning, error
-* ADVANCED_AIRPLAY_PORT controls the port to bind to (defaults to 7000)
-* STUFFING (basic or soxr) controls the stuffing mode (see soxr section below)
+* `MOD_MDNS_NAME` controls the announced name
+* `OUTPUT` (alsa|pipe|stdout) controls the output
+* `DEVICE` (example: `default:CARD=Mojo`) controls the output device (default to "default")
+* `LOG_LEVEL` - debug, info, warning, error
+* `ADVANCED_PORT` controls the port to bind to (defaults to 7000)
 
 Any additional arguments passed when running the image will get fed to the `shairport-sync` binary directly.
 
@@ -73,19 +78,21 @@ docker run --rm docker.io/dubodubonduponey/airplay --help
 
 This is specifically convenient to address a different mixer.
 
-### Custom configuration file
+### Custom configuration
 
-For more advanced control over `shairport-sync` configuration:
-* mount `/magnetar/user/config/shairport-sync/main.conf`.
-* make sure permissions are fine: `chown 2000`
-* add whichever configuration you want aggregated to the default configuration
+You can override any part of the default configuration by specifying the corresponding 
+environment variable.
+
+For example, `SHAIRPORT_MQTT_ENABLED=yes` will enable mqtt.
+
+See `context/reference/shairport-sync.conf` for the full list of supported options.
 
 ### About soxr
 
 In our experience, soxr yields bad results on RPI 3b.
 We advise against using it on low-end hardware.
-Henceforth, default in the image is "basic".
-If you want soxr, use `STUFFING=soxr`
+Henceforth, default in the image is `basic`.
+If you want soxr, use `SHAIRPORT_GENERAL_INTERPOLATION=soxr`
 
 ### About mDNS
 
