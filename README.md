@@ -29,7 +29,7 @@ These reasons could be that you are interested in:
 * observable
   * [x] healthcheck
   * [x] logs to stdout
-  * [ ] ~~prometheus endpoint~~
+  * [ ] ~~prometheus endpoint~~ not applicable - one should rather monitor containers using a dedicated prometheus endpoint
 
 ## Run
 
@@ -59,7 +59,7 @@ The following environment variables allow for high-level control over shairport:
 * MOD_MDNS_NAME controls the announced name
 * OUTPUT (alsa|pipe|stdout) controls the output
 * DEVICE (example: `default:CARD=Mojo`) controls the output device (default to "default")
-* LOG_LEVEL if set to "debug" will pass along `-vvv` and `--statistics` to shairport (noisy!)
+* LOG_LEVEL - debug, info, warning, error
 * ADVANCED_AIRPLAY_PORT controls the port to bind to (defaults to 7000)
 * STUFFING (basic or soxr) controls the stuffing mode (see soxr section below)
 
@@ -75,8 +75,10 @@ This is specifically convenient to address a different mixer.
 
 ### Custom configuration file
 
-For more advanced control over `shairport-sync` configuration, mount `/magnetar/user/config/shairport-sync/main.conf` 
-and just add whichever configuration you want aggregated to the default one.
+For more advanced control over `shairport-sync` configuration:
+* mount `/magnetar/user/config/shairport-sync/main.conf`.
+* make sure permissions are fine: `chown 2000`
+* add whichever configuration you want aggregated to the default configuration
 
 ### About soxr
 
@@ -95,6 +97,7 @@ Therefore, we switched back to avahi/dbus, hopefully run with a non-root user an
 ### About other options
 
 We compile only for alsa, and disabled a number of optional features.
+
 See the Dockerfile for details.
 
 ## Moar?

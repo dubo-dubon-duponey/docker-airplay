@@ -8,21 +8,39 @@ readonly root
 # shellcheck source=/dev/null
 . "$root/mdns.sh"
 
+helpers::logger::set "$LOG_LEVEL"
+
+helpers::logger::log INFO "[entrypoint]" "Starting container"
+
+helpers::logger::log DEBUG "[entrypoint]" "Checking directories permissions"
 helpers::dir::writable "$XDG_RUNTIME_DIR/dbus" create
 helpers::dir::writable "$XDG_RUNTIME_DIR/shairport-sync" create
 helpers::dir::writable "$XDG_CACHE_HOME/shairport-sync" create
 helpers::dir::writable "$XDG_STATE_HOME/avahi-daemon"
 
-mdns::start::dbus
-mdns::start::avahi
+helpers::logger::log INFO "[entrypoint]" "Starting dbus"
+mdns::start::dbus "$LOG_LEVEL"
 
-nqptp &
+helpers::logger::log INFO "[entrypoint]" "Starting avahi"
+mdns::start::avahi "$LOG_LEVEL"
 
+helpers::logger::log INFO "[entrypoint]" "Starting nqptp"
+
+{
+  nqptp 2>&1
+} > >(helpers::logger::slurp "$LOG_LEVEL" "[nqptp]") \
+  && helpers::logger::log INFO "[nqptp]" "nqptp stopped" \
+  || helpers::logger::log ERROR "[nqptp]" "nqptp stopped with exit code: $?" &
+
+helpers::logger::log DEBUG "[entrypoint]" "Preparing configuration"
 [ "${MOD_MQTT_ENABLED:-}" == true ] && MOD_MQTT_ENABLED=yes || MOD_MQTT_ENABLED=no
 [ "${MOD_MQTT_COVER:-}" == true ] && MOD_MQTT_COVER=yes || MOD_MQTT_COVER=no
 
 configuration="$(cat "$XDG_CONFIG_DIRS"/shairport-sync/main.conf)"
 [ ! -e "$XDG_CONFIG_HOME"/shairport-sync/main.conf ] || configuration+="$(cat "$XDG_CONFIG_HOME"/shairport-sync/main.conf)"
+
+env
+
 
 # shellcheck disable=SC2016
 configuration+="$(printf '
@@ -53,15 +71,17 @@ mqtt = {
   "$MOD_MQTT_ENABLED" \
   "${MOD_MQTT_HOST:-}" \
   "${MOD_MQTT_PORT:-1883}" \
-  "${MOD_MQTT_USER:-NULL}" \
-  "${MOD_MQTT_PASSWORD:-NULL}" \
-  "${MOD_MQTT_CA:-NULL}" \
-  "${MOD_MQTT_CERT:-NULL}" \
-  "${MOD_MQTT_KEY:-NULL}" \
+  "${MOD_MQTT_USER:-}" \
+  "${MOD_MQTT_PASSWORD:-}" \
+  "${MOD_MQTT_CA:-}" \
+  "${MOD_MQTT_CERT:-}" \
+  "${MOD_MQTT_KEY:-}" \
   "$MOD_MQTT_COVER")"
 
 printf "%s" "$configuration" > "$XDG_RUNTIME_DIR"/shairport-sync/main.conf
+helpers::logger::log DEBUG "[entrypoint]" "Configuration finalized: $configuration"
 
+helpers::logger::log DEBUG "[entrypoint]" "Preparing command"
 # https://github.com/mikebrady/shairport-sync/blob/master/scripts/shairport-sync.conf
 args=(\
   --name "$MOD_MDNS_NAME" \
@@ -78,4 +98,9 @@ args=(\
 args+=("$@")
 [ ! "$DEVICE" ] || [ "$OUTPUT" != "alsa" ] || args+=(-- -d "$DEVICE")
 
-exec shairport-sync "${args[@]}"
+helpers::logger::log DEBUG "[entrypoint]" "Command ready to execute - handing over now:"
+helpers::logger::log INFO "[entrypoint]" "Starting: shairport-sync ${args[*]}"
+# Slurp logs at log_level and relog properly
+{
+  exec shairport-sync "${args[@]}" 2>&1
+} > >(helpers::logger::slurp "$LOG_LEVEL" "[shairport-sync]")
