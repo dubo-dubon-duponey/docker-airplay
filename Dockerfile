@@ -125,7 +125,8 @@ RUN           --mount=type=secret,uid=100,id=CA \
               apt-get install -qq --no-install-recommends \
                 libssl-dev:"$DEB_TARGET_ARCH"=3.0.11-1~deb12u2 \
                 libavahi-client-dev:"$DEB_TARGET_ARCH"=0.8-10 \
-                avahi-daemon:"$DEB_TARGET_ARCH"=0.8-10
+                avahi-daemon:"$DEB_TARGET_ARCH"=0.8-10 \
+                libglib2.0-dev:"$DEB_TARGET_ARCH"
 
 # Bring in runtime dependencies
 # avutil would be dragging in: libavutil56 libbsd0 libdrm-common libdrm2 libmd0 libva-drm2 libva-x11-2 libva2 libvdpau1 libx11-6 libx11-data libxau6 libxcb1 libxdmcp6 libxext6 libxfixes3 ocl-icd-libopencl1
@@ -186,6 +187,7 @@ RUN           eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" |
                 --with-os=linux \
                 --with-convolution \
                 --with-soxr \
+                --with-dbus-interface \
                 --sysconfdir="$XDG_CONFIG_DIRS"/shairport-sync \
                 --without-configfiles	\
                 --without-sndio \
@@ -194,7 +196,6 @@ RUN           eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" |
                 --without-ao \
                 --without-jack \
                 --without-soundio \
-                --without-dbus-interface \
                 --without-dbus-test-client \
                 --without-mpris-interface \
                 --without-mpris-test-client \
@@ -290,9 +291,15 @@ RUN           --mount=type=secret,uid=100,id=CA \
               && rm -rf /tmp/*               \
               && rm -rf /var/tmp/*
 
-# Deviate avahi temporary files into /tmp (there is a socket, so, probably need exec). Avahi is also braindead and requires the folder to belong to user avahi
-# even if started with a different user.
-RUN           mkdir -p "$XDG_STATE_HOME"/avahi-daemon; ln -s "$XDG_STATE_HOME"/avahi-daemon /run; chown avahi:avahi /run/avahi-daemon; chmod 777 /run/avahi-daemon
+# Deviate avahi temporary files into state. \
+# Avahi is also just braindead and requires the folder to belong to user avahi even if run with a different user.
+# Also, it does not seem possible to override the dbus socket location with environment variables - and shairport is not happy with the custom config location
+# So... back on the system config, but twist it.
+RUN           mkdir -p "$XDG_STATE_HOME"/avahi-daemon; ln -s "$XDG_STATE_HOME"/avahi-daemon /run; chown avahi:avahi /run/avahi-daemon; chmod 777 /run/avahi-daemon; \
+              sed -Ei "s/[/]run[/]dbus[/]system_bus_socket/\/magnetar\/runtime\/dbus\/system_bus_socket/" /usr/share/dbus-1/system.conf; \
+              sed -Ei 's/user="avahi"/user="dubo-dubon-duponey"/' /usr/share/dbus-1/system.d/avahi-dbus.conf
+
+#              sed -Ei 's/deny own/allow own/' /usr/share/dbus-1/system.conf; \
 
 USER          dubo-dubon-duponey
 
@@ -326,10 +333,28 @@ EXPOSE        $ADVANCED_AIRPLAY_PORT/tcp
 EXPOSE        319
 EXPOSE        320
 
-# RTSP port
+
+## Both protocols
+# Obviously 5353 for the mDNS listener
+EXPOSE        5353
+# RTSP (main advertised) port for both Airplay 1 and 2 (overriden by --port in entrypoint - airplay one is supposed to be 5000)
 EXPOSE        7000
-# UDP port range
-EXPOSE        6001-6011/udp
+
+## Airplay 2 only
+# DAAP port (https://en.wikipedia.org/wiki/Digital_Audio_Access_Protocol)
+EXPOSE        3689/tcp
+# PTP ports (https://en.wikipedia.org/wiki/Precision_Time_Protocol)
+EXPOSE        319:320/udp
+# XXX Documentation claims that port 5000/tcp is used as well, on top of "port=7000" - is that a copypaste error?
+#EXPOSE        5000/tcp
+# Ephemeral ports - technically do not need to be exposed
+# EXPOSE        32768:60999
+
+## Airplay 1 only
+# UDP port range for Airplay 1 only
+EXPOSE        6000:6009/udp
+# XXX Documentation also claims that 3689/tcp is used by airplay 1 but...
+# EXPOSE        3689/tcp
 
 VOLUME        "$XDG_RUNTIME_DIR"
 VOLUME        "$XDG_CACHE_HOME"
