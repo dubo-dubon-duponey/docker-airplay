@@ -299,24 +299,29 @@ RUN           mkdir -p "$XDG_STATE_HOME"/avahi-daemon; ln -s "$XDG_STATE_HOME"/a
               sed -Ei "s/[/]run[/]dbus[/]system_bus_socket/\/magnetar\/runtime\/dbus\/system_bus_socket/" /usr/share/dbus-1/system.conf; \
               sed -Ei 's/user="avahi"/user="dubo-dubon-duponey"/' /usr/share/dbus-1/system.d/avahi-dbus.conf
 
-#              sed -Ei 's/deny own/allow own/' /usr/share/dbus-1/system.conf; \
+# Unpleasant but necessary for people trying to use dbus inside the container
+ENV           DBUS_SYSTEM_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/dbus/system_bus_socket"
 
 USER          dubo-dubon-duponey
+
+ENV           LOG_LEVEL="warn"
 
 # Name is used as a short description for the service
 ENV           MOD_MDNS_NAME="Speakeasy"
 
-ENV           LOG_LEVEL="warn"
-
 # Will default to "default"
 ENV           DEVICE=""
-# (alsa|stdout|pipe)
-ENV           OUTPUT=alsa
+
 # basic or soxr - basic is recommend on rpi3 - soxr may be better on rpi4+
-ENV           STUFFING="basic"
+ENV           SHAIRPORT_GENERAL_INTERPOLATION="basic"
+# mono or stereo
+ENV           SHAIRPORT_GENERAL_PLAYBACK_MODE="stereo"
+# convolution file
+ENV           SHAIRPORT_DSP_CONVOLUTION_IR_FILE=""
+# convolution file
+ENV           SHAIRPORT_GENERAL_IGNORE_VOLUME_CONTROL="no"
 
 ENV           MOD_MQTT_ENABLED=false
-ENV           MOD_MQTT_COVER=true
 ENV           MOD_MQTT_HOST=""
 ENV           MOD_MQTT_PORT=""
 ENV           MOD_MQTT_USER=""
@@ -325,20 +330,14 @@ ENV           MOD_MQTT_CA=""
 ENV           MOD_MQTT_CERT=""
 ENV           MOD_MQTT_KEY=""
 
-ENV           ADVANCED_AIRPLAY_PORT=7000
-ENV           HEALTHCHECK_URL=rtsp://127.0.0.1:$ADVANCED_AIRPLAY_PORT
-
-EXPOSE        $ADVANCED_AIRPLAY_PORT/tcp
-# nqptp ports
-EXPOSE        319
-EXPOSE        320
-
+ENV           ADVANCED_PORT=7000
+ENV           HEALTHCHECK_URL=rtsp://127.0.0.1:$ADVANCED_PORT
 
 ## Both protocols
 # Obviously 5353 for the mDNS listener
 EXPOSE        5353
 # RTSP (main advertised) port for both Airplay 1 and 2 (overriden by --port in entrypoint - airplay one is supposed to be 5000)
-EXPOSE        7000
+EXPOSE        $ADVANCED_PORT/tcp
 
 ## Airplay 2 only
 # DAAP port (https://en.wikipedia.org/wiki/Digital_Audio_Access_Protocol)
