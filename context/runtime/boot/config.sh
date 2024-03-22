@@ -59,6 +59,8 @@ export SHAIRPORT_MQTT_PORT="${SHAIRPORT_MQTT_PORT:-1883}"
 export SHAIRPORT_GENERAL_IGNORE_VOLUME_CONTROL="${SHAIRPORT_GENERAL_IGNORE_VOLUME_CONTROL:-no}"
 # Useful for nightingale
 export SHAIRPORT_GENERAL_PLAYBACK_MODE="${SHAIRPORT_GENERAL_PLAYBACK_MODE:-stereo}"
+# Useful for all
+export SHAIRPORT_GENERAL_DEFAULT_VOLUME="${SHAIRPORT_GENERAL_DEFAULT_VOLUME:--20.0}"
 
 export SHAIRPORT_DSP_CONVOLUTION="${SHAIRPORT_DSP_CONVOLUTION:-yes}"
 # Useful for nightingale and dacodac
@@ -72,7 +74,7 @@ export SHAIRPORT_GENERAL_MDNS_BACKEND="avahi"
 export SHAIRPORT_GENERAL_UDP_PORT_BASE="6000"
 export SHAIRPORT_GENERAL_UDP_PORT_RANGE="10"
 
-export SHAIRPORT_METADATA_ART_CACHE_DIRECTORY="$XDG_CACHE_HOME/shairport-sync"
+export SHAIRPORT_METADATA_COVER_ART_CACHE_DIRECTORY="$XDG_CACHE_HOME/shairport-sync"
 export SHAIRPORT_METADATA_PIPE_NAME="$XDG_RUNTIME_DIR/shairport-sync/metadata"
 
 
@@ -81,4 +83,7 @@ export SHAIRPORT_DIAGNOSTICS_LOG_SHOW_TIME_SINCE_LAST_MESSAGE="${SHAIRPORT_DIAGN
 export SHAIRPORT_DIAGNOSTICS_LOG_SHOW_FILE_AND_LINE="${SHAIRPORT_DIAGNOSTICS_LOG_SHOW_FILE_AND_LINE:-no}"
 export SHAIRPORT_DIAGNOSTICS_LOG_OUTPUT_TO="stderr"
 
-helpers::config::slurp SHAIRPORT helpers::config::serialization::kv::equal
+helpers::config::process(){
+  helpers::config::slurp SHAIRPORT helpers::config::serialization::kv::equal
+  helpers::config::dump SHAIRPORT "general" "mqtt" "dsp" "metadata" "diagnostics"
+}
