@@ -41,7 +41,7 @@ export SHAIRPORT_GENERAL_NAME="$MOD_MDNS_NAME"
 export SHAIRPORT_GENERAL_PORT="${ADVANCED_PORT:-7000}"
 export SHAIRPORT_GENERAL_INTERPOLATION="${SHAIRPORT_GENERAL_INTERPOLATION:-basic}"
 
-configuration="$(helpers::config::dump SHAIRPORT "general" "mqtt" "dsp" "metadata" "diagnostics")"
+configuration="$(helpers::config::process SHAIRPORT "general" "mqtt" "dsp" "metadata" "diagnostics")"
 printf "%s" "$configuration" > "$XDG_RUNTIME_DIR"/shairport-sync/main.conf
 helpers::logger::log DEBUG "[entrypoint]" "Configuration finalized: $configuration"
 
