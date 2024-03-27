@@ -340,7 +340,7 @@ EXPOSE        3689/tcp
 # PTP ports (https://en.wikipedia.org/wiki/Precision_Time_Protocol)
 EXPOSE        319/udp
 EXPOSE        320/udp
-# XXX Documentation claims that port 5000/tcp is used as well, on top of "port=7000" - is that a copypaste error?
+# XXX Documentation claims that port 5000/tcp is used as well, on top of "port=7000" - is that a copy-paste error?
 #EXPOSE        5000/tcp
 # Ephemeral ports - technically do not need to be exposed
 # EXPOSE        32768:60999
