@@ -33,8 +33,9 @@ helpers::config::dump(){
   local var
 
   for section in "${sections[@]}"; do
+    key="$(printf "_mapping_%s_%s" "$top" "${section}" | tr '[:upper:]' '[:lower:]')"
     echo "$section = {"
-    declare -n var="$(printf "_mapping_%s_%s" "$top" "${section}" | tr '[:upper:]' '[:lower:]')"
+    declare -n var="$key"
     for conf in "${var[@]}"; do
       echo "  $conf"
     done
@@ -42,6 +43,7 @@ helpers::config::dump(){
   done
 }
 
+# The following defines our defaults for shairport configuration
 export SHAIRPORT_MQTT_PUBLISH_COVER="${SHAIRPORT_MQTT_PUBLISH_COVER:-yes}"
 export SHAIRPORT_MQTT_ENABLE_REMOTE="${SHAIRPORT_MQTT_ENABLE_REMOTE:-yes}"
 
@@ -55,17 +57,8 @@ export SHAIRPORT_MQTT_PORT="${SHAIRPORT_MQTT_PORT:-1883}"
 #SHAIRPORT_MQTT_CERTFILE
 #SHAIRPORT_MQTT_KEYFILE
 
-# Useful for magnetar
-export SHAIRPORT_GENERAL_IGNORE_VOLUME_CONTROL="${SHAIRPORT_GENERAL_IGNORE_VOLUME_CONTROL:-no}"
-# Useful for nightingale
-export SHAIRPORT_GENERAL_PLAYBACK_MODE="${SHAIRPORT_GENERAL_PLAYBACK_MODE:-stereo}"
-# Useful for all
-export SHAIRPORT_GENERAL_DEFAULT_VOLUME="${SHAIRPORT_GENERAL_DEFAULT_VOLUME:--20.0}"
-
-export SHAIRPORT_DSP_CONVOLUTION="${SHAIRPORT_DSP_CONVOLUTION:-yes}"
-# Useful for nightingale and dacodac
-#SHAIRPORT_DSP_CONVOLUTION_IR_FILE
-
+# Useful for rpi4
+export SHAIRPORT_GENERAL_INTERPOLATION="${SHAIRPORT_GENERAL_INTERPOLATION:-basic}"
 # shellcheck disable=SC2034
 export SHAIRPORT_GENERAL_OUTPUT_BACKEND="alsa"
 # shellcheck disable=SC2034
@@ -74,9 +67,13 @@ export SHAIRPORT_GENERAL_MDNS_BACKEND="avahi"
 export SHAIRPORT_GENERAL_UDP_PORT_BASE="6000"
 export SHAIRPORT_GENERAL_UDP_PORT_RANGE="10"
 
+# Enable by default - and then some may have a file
+export SHAIRPORT_DSP_CONVOLUTION="${SHAIRPORT_DSP_CONVOLUTION:-yes}"
+# Useful for nightingale and dacodac
+[ ! -f "$XDG_CONFIG_HOME/impulse.wav" ] || export SHAIRPORT_DSP_CONVOLUTION_IR_FILE="$XDG_CONFIG_HOME/impulse.wav"
+
 export SHAIRPORT_METADATA_COVER_ART_CACHE_DIRECTORY="$XDG_CACHE_HOME/shairport-sync"
 export SHAIRPORT_METADATA_PIPE_NAME="$XDG_RUNTIME_DIR/shairport-sync/metadata"
-
 
 export SHAIRPORT_DIAGNOSTICS_LOG_SHOW_TIME_SINCE_STARTUP="${SHAIRPORT_DIAGNOSTICS_LOG_SHOW_TIME_SINCE_STARTUP:-no}"
 export SHAIRPORT_DIAGNOSTICS_LOG_SHOW_TIME_SINCE_LAST_MESSAGE="${SHAIRPORT_DIAGNOSTICS_LOG_SHOW_TIME_SINCE_LAST_MESSAGE:-no}"

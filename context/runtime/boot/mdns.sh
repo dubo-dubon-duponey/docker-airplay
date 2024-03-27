@@ -89,6 +89,7 @@ mdns::start::avahi(){
   [ "$log_level" != "debug" ] || args+=(--debug)
 
   # -D/--daemonize implies -s/--syslog that we do not want, so, just background it
+  # shellcheck disable=SC2015
   {
     {
       avahi-daemon -f "$XDG_CONFIG_DIRS"/avahi/main.conf --no-drop-root --no-chroot "${args[@]}" 2>&1
@@ -130,6 +131,7 @@ mdns::start::dbus(){
   # Start it, without a PID file, no fork
   # XXX somehow right now shairport-sync is not happy - disable custom config for now
   # dbus-daemon --nofork --nopidfile --nosyslog --config-file "$XDG_CONFIG_DIRS"/dbus/main.conf
+  # shellcheck disable=SC2015
   {
     {
       dbus-daemon --system --nofork --nopidfile --nosyslog 2>&1

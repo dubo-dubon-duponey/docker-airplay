@@ -310,16 +310,11 @@ ENV           LOG_LEVEL="warn"
 ENV           MOD_MDNS_NAME="Speakeasy"
 
 # Will default to "default"
-ENV           DEVICE=""
-
-# basic or soxr - basic is recommend on rpi3 - soxr may be better on rpi4+
-ENV           SHAIRPORT_GENERAL_INTERPOLATION="basic"
-# mono or stereo
-ENV           SHAIRPORT_GENERAL_PLAYBACK_MODE="stereo"
-# convolution file
-ENV           SHAIRPORT_DSP_CONVOLUTION_IR_FILE=""
-# convolution file
-ENV           SHAIRPORT_GENERAL_IGNORE_VOLUME_CONTROL="no"
+ENV           MOD_AUDIO_DEVICE=""
+ENV           MOD_AUDIO_MIXER=""
+ENV           MOD_AUDIO_MODE="stereo"
+ENV           MOD_AUDIO_VOLUME_DEFAULT="-20.0"
+ENV           MOD_AUDIO_VOLUME_IGNORE=false
 
 ENV           MOD_MQTT_ENABLED=false
 ENV           MOD_MQTT_HOST=""
@@ -343,7 +338,8 @@ EXPOSE        $ADVANCED_PORT/tcp
 # DAAP port (https://en.wikipedia.org/wiki/Digital_Audio_Access_Protocol)
 EXPOSE        3689/tcp
 # PTP ports (https://en.wikipedia.org/wiki/Precision_Time_Protocol)
-EXPOSE        319:320/udp
+EXPOSE        319/udp
+EXPOSE        320/udp
 # XXX Documentation claims that port 5000/tcp is used as well, on top of "port=7000" - is that a copypaste error?
 #EXPOSE        5000/tcp
 # Ephemeral ports - technically do not need to be exposed
@@ -351,7 +347,7 @@ EXPOSE        319:320/udp
 
 ## Airplay 1 only
 # UDP port range for Airplay 1 only
-EXPOSE        6000:6009/udp
+EXPOSE        6000-6009/udp
 # XXX Documentation also claims that 3689/tcp is used by airplay 1 but...
 # EXPOSE        3689/tcp
 
