@@ -42,6 +42,7 @@ helpers::logger::log DEBUG "[entrypoint]" "Preparing configuration"
 # Connect specific env variables to shairport scheme
 export SHAIRPORT_GENERAL_NAME="$MOD_MDNS_NAME"
 export SHAIRPORT_GENERAL_PORT="${ADVANCED_PORT:-7000}"
+export SHAIRPORT_GENERAL_OUTPUT_BACKEND="${MOD_AUDIO_OUTPUT:-alsa}"
 # Useful for nightingale
 export SHAIRPORT_GENERAL_PLAYBACK_MODE="${MOD_AUDIO_MODE:-stereo}"
 # Useful for all
