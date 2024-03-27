@@ -68,9 +68,15 @@ export SHAIRPORT_GENERAL_UDP_PORT_BASE="6000"
 export SHAIRPORT_GENERAL_UDP_PORT_RANGE="10"
 
 # Enable by default - and then some may have a file
-export SHAIRPORT_DSP_CONVOLUTION="${SHAIRPORT_DSP_CONVOLUTION:-yes}"
-# Useful for nightingale and dacodac
-[ ! -f "$XDG_CONFIG_HOME/impulse.wav" ] || export SHAIRPORT_DSP_CONVOLUTION_IR_FILE="$XDG_CONFIG_HOME/impulse.wav"
+export SHAIRPORT_DSP_CONVOLUTION="${SHAIRPORT_DSP_CONVOLUTION:-no}"
+export SHAIRPORT_DSP_CONVOLUTION_IR_FILE="${SHAIRPORT_DSP_CONVOLUTION_IR_FILE:-$XDG_CONFIG_HOME/impulse.wav}"
+# Useful for nightingale and dacodac - if file is here, force enable
+[ ! -f "$SHAIRPORT_DSP_CONVOLUTION_IR_FILE" ] && {
+  [ "$SHAIRPORT_DSP_CONVOLUTION" == no ] || {
+    helpers::logger::log ERROR "Convolution is on but no file was provided or the file you want is not here. Disabling."
+    SHAIRPORT_DSP_CONVOLUTION=no
+  }
+} || SHAIRPORT_DSP_CONVOLUTION=yes
 
 export SHAIRPORT_METADATA_COVER_ART_CACHE_DIRECTORY="$XDG_CACHE_HOME/shairport-sync"
 export SHAIRPORT_METADATA_PIPE_NAME="$XDG_RUNTIME_DIR/shairport-sync/metadata"
@@ -82,5 +88,5 @@ export SHAIRPORT_DIAGNOSTICS_LOG_OUTPUT_TO="stderr"
 
 helpers::config::process(){
   helpers::config::slurp SHAIRPORT helpers::config::serialization::kv::equal
-  helpers::config::dump SHAIRPORT "general" "mqtt" "dsp" "metadata" "diagnostics"
+  helpers::config::dump SHAIRPORT "general" "sessioncontrol" "alsa" "pipe" "dsp" "metadata" "mqtt" "diagnostics"
 }
