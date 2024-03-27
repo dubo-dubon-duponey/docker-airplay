@@ -311,6 +311,7 @@ ENV           MOD_MDNS_NAME="Speakeasy"
 
 # Will default to "default"
 ENV           MOD_AUDIO_DEVICE=""
+ENV           MOD_AUDIO_OUTPUT=alsa
 ENV           MOD_AUDIO_MIXER=""
 ENV           MOD_AUDIO_MODE="stereo"
 ENV           MOD_AUDIO_VOLUME_DEFAULT="-20.0"
