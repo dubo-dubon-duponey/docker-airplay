@@ -13,7 +13,7 @@ Most people should just use that, instead of our image.
 This here is an opinionated and more limited version that only support certain use-cases.
 
 Specifically:
-* security is much tighter
+* security is tighter
 * based on Debian instead of Alpine
 * configuration through environment variables
 * only supports alsa

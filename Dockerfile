@@ -212,7 +212,6 @@ RUN           eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" |
                 --without-tinysvcmdns; \
               make; \
               make install
-#                --with-ssl=mbedtls \
 
 # Cleanup
 RUN           rm /dist/boot/lib/libalac.a
@@ -314,11 +313,16 @@ ENV           LOG_LEVEL="warn"
 ENV           MOD_MDNS_NAME="Speakeasy"
 
 # Will default to "default"
-ENV           MOD_AUDIO_DEVICE=""
 ENV           MOD_AUDIO_OUTPUT=alsa
+# Also output device
+ENV           MOD_AUDIO_DEVICE=""
+# Alsa mixer controle
 ENV           MOD_AUDIO_MIXER=""
+# Playback mode (mono or stereo)
 ENV           MOD_AUDIO_MODE="stereo"
+# Initial volume
 ENV           MOD_AUDIO_VOLUME_DEFAULT="-20.0"
+# Set to true to ignore any software controlled volume
 ENV           MOD_AUDIO_VOLUME_IGNORE=false
 
 ENV           MOD_MQTT_ENABLED=false
@@ -346,7 +350,7 @@ EXPOSE        3689/tcp
 EXPOSE        319/udp
 EXPOSE        320/udp
 # XXX Documentation claims that port 5000/tcp is used as well, on top of "port=7000" - is that a copy-paste error?
-#EXPOSE        5000/tcp
+# EXPOSE        5000/tcp
 # Ephemeral ports - technically do not need to be exposed
 # EXPOSE        32768:60999
 
