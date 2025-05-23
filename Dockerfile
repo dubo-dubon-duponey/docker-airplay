@@ -1,10 +1,10 @@
 ARG           FROM_REGISTRY=docker.io/dubodubonduponey
 
-ARG           FROM_IMAGE_FETCHER=base:golang-bookworm-2024-03-01
-ARG           FROM_IMAGE_BUILDER=base:builder-bookworm-2024-03-01
-ARG           FROM_IMAGE_AUDITOR=base:auditor-bookworm-2024-03-01
-ARG           FROM_IMAGE_TOOLS=tools:linux-bookworm-2024-03-01
-ARG           FROM_IMAGE_RUNTIME=base:runtime-bookworm-2024-03-01
+ARG           FROM_IMAGE_FETCHER=base:golang-bookworm-2025-05-01
+ARG           FROM_IMAGE_BUILDER=base:builder-bookworm-2025-05-01
+ARG           FROM_IMAGE_AUDITOR=base:auditor-bookworm-2025-05-01
+ARG           FROM_IMAGE_TOOLS=tools:linux-bookworm-2025-05-01
+ARG           FROM_IMAGE_RUNTIME=base:runtime-bookworm-2025-05-01
 
 FROM          $FROM_REGISTRY/$FROM_IMAGE_TOOLS                                                                          AS builder-tools
 
@@ -14,8 +14,8 @@ FROM          $FROM_REGISTRY/$FROM_IMAGE_TOOLS                                  
 FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_FETCHER                                              AS fetcher-alac
 
 ARG           GIT_REPO=github.com/mikebrady/alac
-ARG           GIT_VERSION=96dd59d
-ARG           GIT_COMMIT=96dd59d17b776a7dc94ed9b2c2b4a37177feb3c4
+ARG           GIT_VERSION=1832544
+ARG           GIT_COMMIT=1832544d27d01335d823d639b176d1cae25ecfd4
 
 RUN           git clone --recurse-submodules https://"$GIT_REPO" .; git checkout "$GIT_COMMIT"
 
@@ -29,9 +29,10 @@ RUN           git clone --recurse-submodules https://"$GIT_REPO" .; git checkout
 
 FROM          --platform=$BUILDPLATFORM $FROM_REGISTRY/$FROM_IMAGE_FETCHER                                              AS fetcher-shairport
 
+
 ARG           GIT_REPO=github.com/mikebrady/shairport-sync
-ARG           GIT_VERSION=4.3.2
-ARG           GIT_COMMIT=2ed5d998fb52040174af200f96f868622f87453a
+ARG           GIT_VERSION=4.3.7
+ARG           GIT_COMMIT=0b1c4391ffd398e7b145eb4b98416261380adeea
 
 RUN           git clone --recurse-submodules https://"$GIT_REPO" .; git checkout "$GIT_COMMIT"
 
@@ -95,6 +96,8 @@ ARG           TARGETARCH
 ARG           TARGETVARIANT
 
 # hadolint ignore=DL3008
+# XXX revert - workaround bug in sources list in docker-debian
+#              rm /etc/apt/sources.list.d/*; \
 RUN           --mount=type=secret,uid=100,id=CA \
               --mount=type=secret,uid=100,id=CERTIFICATE \
               --mount=type=secret,uid=100,id=KEY \
@@ -105,28 +108,29 @@ RUN           --mount=type=secret,uid=100,id=CA \
               eval "$(dpkg-architecture -A "$(echo "$TARGETARCH$TARGETVARIANT" | sed -e "s/^armv6$/armel/" -e "s/^armv7$/armhf/" -e "s/^ppc64le$/ppc64el/" -e "s/^386$/i386/")")"; \
               apt-get update -qq; \
               apt-get install -qq --no-install-recommends \
-                libavutil-dev:"$DEB_TARGET_ARCH"=7:5.1.4-0+deb12u1 \
-                libavcodec-dev:"$DEB_TARGET_ARCH"=7:5.1.4-0+deb12u1 \
-                libavformat-dev:"$DEB_TARGET_ARCH"=7:5.1.4-0+deb12u1 \
-                uuid-dev:"$DEB_TARGET_ARCH"=2.38.1-5+b1 \
+                libavutil-dev:"$DEB_TARGET_ARCH"=7:5.1.6-0+deb12u1 \
+                libavcodec-dev:"$DEB_TARGET_ARCH"=7:5.1.6-0+deb12u1 \
+                libavformat-dev:"$DEB_TARGET_ARCH"=7:5.1.6-0+deb12u1 \
                 libgcrypt20-dev:"$DEB_TARGET_ARCH"=1.10.1-3 \
+                uuid-dev:"$DEB_TARGET_ARCH"=2.38.1-5+deb12u3; \
+              apt-get install -qq --no-install-recommends \
                 libsodium-dev:"$DEB_TARGET_ARCH"=1.0.18-1 \
                 libplist-dev:"$DEB_TARGET_ARCH"=2.2.0-6+b2 \
                 libmosquitto-dev:"$DEB_TARGET_ARCH"=2.0.11-1.2+deb12u1 \
                 libasound2-dev:"$DEB_TARGET_ARCH"=1.2.8-1+b1 \
+                xxd:"$DEB_TARGET_ARCH"=2:9.0.1378-2+deb12u2; \
+              apt-get install -qq --no-install-recommends \
                 libconfig-dev:"$DEB_TARGET_ARCH"=1.5-0.4 \
                 libpopt-dev:"$DEB_TARGET_ARCH"=1.19+dfsg-1 \
-                xxd:"$DEB_TARGET_ARCH"=2:9.0.1378-2; \
-              apt-get install -qq --no-install-recommends \
                 libmbedtls-dev:"$DEB_TARGET_ARCH"=2.28.3-1 \
                 libsoxr-dev:"$DEB_TARGET_ARCH"=0.1.3-4 \
-                libflac12:"$DEB_TARGET_ARCH"=1.4.2+ds-2 \
                 libsndfile1-dev:"$DEB_TARGET_ARCH"=1.2.0-1; \
               apt-get install -qq --no-install-recommends \
-                libssl-dev:"$DEB_TARGET_ARCH"=3.0.11-1~deb12u2 \
-                libavahi-client-dev:"$DEB_TARGET_ARCH"=0.8-10 \
-                avahi-daemon:"$DEB_TARGET_ARCH"=0.8-10 \
-                libglib2.0-dev:"$DEB_TARGET_ARCH"
+                libflac12:"$DEB_TARGET_ARCH"=1.4.2+ds-2 \
+                libssl-dev:"$DEB_TARGET_ARCH"=3.0.15-1~deb12u1 \
+                libavahi-client-dev:"$DEB_TARGET_ARCH"=0.8-10+deb12u1 \
+                avahi-daemon:"$DEB_TARGET_ARCH"=0.8-10+deb12u1 \
+                libglib2.0-dev:"$DEB_TARGET_ARCH"=2.74.6-2+deb12u5
 
 # Bring in runtime dependencies
 # avutil would be dragging in: libavutil56 libbsd0 libdrm-common libdrm2 libmd0 libva-drm2 libva-x11-2 libva2 libvdpau1 libx11-6 libx11-data libxau6 libxcb1 libxdmcp6 libxext6 libxfixes3 ocl-icd-libopencl1
@@ -281,10 +285,10 @@ RUN           --mount=type=secret,uid=100,id=CA \
               --mount=type=secret,id=APT_CONFIG \
               apt-get update -qq \
               && apt-get install -qq --no-install-recommends \
-                libavutil57=7:5.1.4-0+deb12u1 \
-                libavcodec59=7:5.1.4-0+deb12u1 \
-                libavformat59=7:5.1.4-0+deb12u1 \
-                avahi-daemon=0.8-10 \
+                libavutil57=7:5.1.6-0+deb12u1 \
+                libavcodec59=7:5.1.6-0+deb12u1 \
+                libavformat59=7:5.1.6-0+deb12u1 \
+                avahi-daemon=0.8-10+deb12u1 \
               && apt-get -qq autoremove       \
               && apt-get -qq clean            \
               && rm -rf /var/lib/apt/lists/*  \

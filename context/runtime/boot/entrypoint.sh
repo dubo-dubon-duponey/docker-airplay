@@ -66,7 +66,7 @@ case "$LOG_LEVEL" in
   "info")
     SHAIRPORT_DIAGNOSTICS_LOG_VERBOSITY="1"
   ;;
-  "warn")
+  "warning")
     SHAIRPORT_DIAGNOSTICS_LOG_VERBOSITY="0"
   ;;
   "error")
